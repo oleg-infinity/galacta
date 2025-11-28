@@ -6,7 +6,7 @@
 #include "player.h"
 
 #define MAX_ASTEROIDS 15
-#define MAX_BULLETS 30
+#define MAX_BULLETS 10
 
 int main(){
     srand((unsigned)time(NULL));
@@ -78,6 +78,12 @@ int main(){
 
     int score = 0;
 
+    int bullets_recover_timer = 0;
+    int bullets_left= MAX_BULLETS;
+    for(int i = 0; i < MAX_BULLETS; i++){
+        bullets[i].active = 0;
+    }
+
     int score_timer = 0;
 
     while (ch != 'q') {
@@ -85,29 +91,40 @@ int main(){
         box(win, 0, 0);
         mvwprintw(win, 1, 1, "Press 'q' to quit");
 
-        mvwprintw(win, 1, win_width - 12, "Score: %d", score);
+        mvwprintw(win, 1, win_width - 10, "Score: %d", score);
+        mvwprintw(win, 1, win_width / 2 - 3, "Bullets: %d", bullets_left);
 
         ch = wgetch(win);
 
-        if(ch == ' ') shoot(bullets, MAX_BULLETS, &player);
-        move_bullets(bullets, MAX_BULLETS);
-        draw_bullets(win, bullets, MAX_BULLETS);
-
-        if(ch == 'a' && player.x > 1) move_left(&player, 1);
-        if(ch == 'd' && player.x < win_width - 4) move_right(&player, win_width - 4);
-
-        switch (ch) {
+        switch (ch){
+            case 'a':
             case KEY_LEFT:  
             if(player.x > 1) {
                 move_left(&player, 1);
                 break;
             }
+            case 'd':
             case KEY_RIGHT: 
             if(player.x < win_width - 4) {
                 move_right(&player, win_width - 4);
                 break;
             }
+            case ' ':
+                if(bullets_left > 0){
+                    for(int i = 0; i < MAX_BULLETS; i++){
+                        if(!bullets[i].active){
+                            shoot(bullets, bullets_left, &player);
+                            bullets[i].active = 1;
+                            bullets_left--;
+                            break;
+                        }
+                    }
+                }
+                break;
         }
+
+        move_bullets(bullets, bullets_left);
+        draw_bullets(win, bullets, bullets_left);
 
         asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval);
 
@@ -122,8 +139,16 @@ int main(){
             for(int a = 0; a < MAX_ASTEROIDS; a++){
                 if(bullet_hits_asteroid(&bullets[b], &asteroids[a])){
                     score += 5;
+                    bullets[b].active = 0;
                 }
             }
+        }
+        bullets_recover_timer += 10;
+        if(bullets_recover_timer >= 5000){
+            if(bullets_left < MAX_BULLETS){
+                bullets_left++;
+            }
+            bullets_recover_timer = 0;
         }
 
         draw_player(win, &player);

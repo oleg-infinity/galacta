@@ -34,9 +34,9 @@ void draw_player(WINDOW *win, Player *p) {
 void shoot(Bullet bullets[], int max_bullets, Player *p){
     for(int i = 0; i < max_bullets; i++){
         if(!bullets[i].active){
-            bullets[i].active = 1;
             bullets[i].x = p->x + p->width / 2;
             bullets[i].y = p->y - 1;
+            bullets[i].active = 1;
             return;
         }
     }
