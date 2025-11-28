@@ -73,10 +73,17 @@ int main(){
     int spawn_timer = 0;
     int spawn_interval = (rand() % 70) + 20;
 
+    int score = 0;
+
+    int score_timer = 0;
+
     while (ch != 'q') {
         werase(win);
         box(win, 0, 0);
         mvwprintw(win, 1, 1, "Press 'q' to quit");
+
+        mvwprintw(win, 1, win_width - 12, "Score: %d", score);
+
         ch = wgetch(win);
 
         if(ch == 'a' && player.x > 1) move_left(&player, 1);
@@ -112,6 +119,13 @@ int main(){
                 break;
             }
         }
+
+        score_timer++;
+        if(score_timer >= 100){
+            score++;
+            score_timer = 0;
+        }
+
         wrefresh(win);
 
         napms(10);

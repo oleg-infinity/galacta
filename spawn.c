@@ -96,7 +96,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             if(x < 0) return;
 
             asteroids[i].x = x;
-            asteroids[i].y = 1;
+            asteroids[i].y = 2;
             asteroids[i].width = tpl->width;
             asteroids[i].height = tpl->height;
             asteroids[i].shape = tpl->shape;
