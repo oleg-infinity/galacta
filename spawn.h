@@ -35,4 +35,6 @@ void draw_asteroid(WINDOW *win, Asteroid *a);
 
 int check_collision(Asteroid *a, Player *p);
 
+int bullet_hits_asteroid(Bullet *b, Asteroid *a);
+
 #endif

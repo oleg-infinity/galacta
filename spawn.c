@@ -166,3 +166,31 @@ int check_collision(Asteroid *a, Player *p){
     }
     return 0;
 }
+
+int bullet_hits_asteroid(Bullet *b, Asteroid *a){
+    if(!b->active || !a->active) return 0;
+
+    int ay = (int)a->y;
+
+    for(int row = 0; row < a->height; row++){
+        if(!a->row_active[row]) continue;
+
+        int y = ay + row;
+        int x1 = a->x;
+        int x2 = a->x + a->width - 1;
+
+        if(b->y == y && b->x >= x1 && b->x <= x2){
+            a->row_active[row] = 0; 
+            a->active = 0;
+            return 1;
+        }
+    }
+
+    int alive = 0;
+    for(int i = 0; i < a->height; i++){
+        if(a->row_active[i]) alive = 1;
+    }
+    if(!alive) a->active = 0;
+
+    return 0;
+}

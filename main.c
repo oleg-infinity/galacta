@@ -6,6 +6,7 @@
 #include "player.h"
 
 #define MAX_ASTEROIDS 15
+#define MAX_BULLETS 30
 
 int main(){
     srand((unsigned)time(NULL));
@@ -39,6 +40,8 @@ int main(){
         "/0\\"
     };
     Player player = {x, y, 3, 3, shatl};
+
+    Bullet bullets[MAX_BULLETS];
 
     Asteroid asteroids[MAX_ASTEROIDS];
     for(int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = 0;
@@ -86,6 +89,10 @@ int main(){
 
         ch = wgetch(win);
 
+        if(ch == ' ') shoot(bullets, MAX_BULLETS, &player);
+        move_bullets(bullets, MAX_BULLETS);
+        draw_bullets(win, bullets, MAX_BULLETS);
+
         if(ch == 'a' && player.x > 1) move_left(&player, 1);
         if(ch == 'd' && player.x < win_width - 4) move_right(&player, win_width - 4);
 
@@ -107,6 +114,16 @@ int main(){
         for(int i = 0; i < MAX_ASTEROIDS; i++){
             move_down(&asteroids[i], win_height - 1);
             draw_asteroid(win, &asteroids[i]);
+        }
+
+        for(int b = 0; b < MAX_BULLETS; b++){
+            if(!bullets[b].active) continue;
+
+            for(int a = 0; a < MAX_ASTEROIDS; a++){
+                if(bullet_hits_asteroid(&bullets[b], &asteroids[a])){
+                    score += 5;
+                }
+            }
         }
 
         draw_player(win, &player);

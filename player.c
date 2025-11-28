@@ -30,3 +30,33 @@ void draw_player(WINDOW *win, Player *p) {
         }    
     }
 }
+
+void shoot(Bullet bullets[], int max_bullets, Player *p){
+    for(int i = 0; i < max_bullets; i++){
+        if(!bullets[i].active){
+            bullets[i].active = 1;
+            bullets[i].x = p->x + p->width / 2;
+            bullets[i].y = p->y - 1;
+            return;
+        }
+    }
+}
+
+void move_bullets(Bullet bullets[], int max_bullets){
+    for(int i = 0; i < max_bullets; i++){
+        if(bullets[i].active){
+            bullets[i].y--;
+            if(bullets[i].y < 1){
+                bullets[i].active = 0;
+            }
+        }
+    }
+}
+
+void draw_bullets(WINDOW *win, Bullet bullets[], int max_bullets){
+    for(int i = 0; i < max_bullets; i++){
+        if(bullets[i].active){
+            mvwprintw(win, bullets[i].y, bullets[i].x, "|");
+        }
+    }
+}
