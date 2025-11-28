@@ -3,6 +3,7 @@
 #define SPAWN_H
 
 #include <ncurses.h>
+#include "player.h"
 
 typedef struct {
     int x;
@@ -22,7 +23,7 @@ typedef struct {
 
 int overlaps(int x, int width, Asteroid *a);
 
-int biuld_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], int count, int win_width);
+int build_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], int count, int win_width);
 
 int choose_spawn_x(SpawnZone zones[], int zone_count, int width);
 
@@ -31,5 +32,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
 void move_down(Asteroid *a, int max_y);
 
 void draw_asteroid(WINDOW *win, Asteroid *a);
+
+int check_collision(Asteroid *a, Player *p);
 
 #endif

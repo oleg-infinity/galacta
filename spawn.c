@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include "spawn.h"
+#include "player.h"
 
 // spawn asteroid functions
 
@@ -13,7 +14,7 @@ int overlaps(int x, int width, Asteroid *a){
     return !(right_new < left_old || left_new > right_old);
 }
 
-int biuld_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], int count, int win_width){
+int build_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], int count, int win_width){
     Asteroid* act[32];
     int c = 0;
     for(int i = 0; i < count; i++){
@@ -90,7 +91,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             Asteroid *tpl = types[rand() % num_types];
 
             SpawnZone zones[16];
-            int zone_count = biuld_spawn_zones(zones, 16, asteroids, max_asteroids, win_width);
+            int zone_count = build_spawn_zones(zones, 16, asteroids, max_asteroids, win_width);
             int x = choose_spawn_x(zones, zone_count, tpl->width);
             if(x < 0) return;
 
@@ -139,4 +140,29 @@ void draw_asteroid(WINDOW *win, Asteroid *a) {
             }
         }    
     }
+}
+
+int check_collision(Asteroid *a, Player *p){
+    if(!a->active) return 0;
+
+    for(int i = 0; i < a->height; i++){
+        if(!a->row_active[i]) continue;
+        int row_y = (int)(a->y)+i;
+
+        for(int j = 0; j < a->width; j++){
+            if(a->shape[i][j] == ' ') continue;
+            int col_x = a-> x + j;
+
+            for(int py = 0; py < p->height; py++){
+                for(int px = 0; px < p->width; px++){
+                    int gx = p-> x + px;
+                    int gy = p-> y + py;
+                    if(col_x == gx && row_y == gy){
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
 }

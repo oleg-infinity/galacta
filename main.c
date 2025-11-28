@@ -3,42 +3,9 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include "spawn.h"
+#include "player.h"
 
 #define MAX_ASTEROIDS 15
-
-typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-    const char **shape;
-    int symbol;
-} Player;
-
-void move_left(Player *p, int min_x) {
-    if(p->x > min_x+1){
-        p->x-=2;
-    } else {
-        p->x-=1;
-    }
-}
-void move_right(Player *p, int max_x) {
-    if(p->x < max_x-1){
-        p->x+=2; 
-    } else {
-        p->x+=1; 
-    }
-}
-void draw_player(WINDOW *win, Player *p) {
-    for(int i = 0; i < p->height; i++){
-        for(int j = 0; j < p->width; j++){
-            char c = p->shape[i][j];
-            if(c != ' '){
-                mvwprintw(win, (int)(p->y) + i, p->x + j, "%c", c);
-            }
-        }    
-    }
-}
 
 int main(){
     srand((unsigned)time(NULL));
@@ -65,12 +32,13 @@ int main(){
     wrefresh(win);
 
     int x = win_width / 2; 
-    int y = win_height - 3;
+    int y = win_height - 4;
     const char *shatl[] = {
-        " ^ ",
+        ". .",
+        "|^|",
         "/0\\"
     };
-    Player player = {x, y, 3, 2, shatl};
+    Player player = {x, y, 3, 3, shatl};
 
     Asteroid asteroids[MAX_ASTEROIDS];
     for(int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = 0;
@@ -135,6 +103,15 @@ int main(){
         }
 
         draw_player(win, &player);
+        for(int i = 0; i < MAX_ASTEROIDS; i++){
+            if(check_collision(&asteroids[i], &player)){
+                mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
+                wrefresh(win);
+                napms(2000);
+                ch = 'q';
+                break;
+            }
+        }
         wrefresh(win);
 
         napms(10);

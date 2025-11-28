@@ -1,0 +1,1 @@
+gcc main.c spawn.c -lncurses -o game
