@@ -12,6 +12,7 @@ typedef struct {
     const char **shape;
     float speed;
     int active;
+    int row_active[5];
 } Asteroid;
 
 typedef struct {

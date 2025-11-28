@@ -102,6 +102,10 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             asteroids[i].speed = ((rand() % 3) + 1) / 100.0;
             asteroids[i].active = 1;
 
+            for(int r = 0; r < asteroids[i].height; r++){
+                asteroids[i].row_active[r] = 1;
+            }
+
             *timer = 0;
             *interval = (rand() % 60) + 40;
             return;
@@ -112,14 +116,22 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
 void move_down(Asteroid *a, int max_y) {
     if(!a->active) return;
     a->y += a->speed;
-    if(a->y >= max_y){
-        a->active = 0;
+    for(int i = 0; i < a->height; i++){
+        if((int)(a->y) + i >= max_y){
+            a->row_active[i] = 0;
+        }
     }
+    int any_active = 0;
+    for(int i = 0; i < a->height; i++){
+        if(a->row_active[i]) {any_active = 1; break;}
+    }
+    if(!any_active) a->active = 0;
 }
 
 void draw_asteroid(WINDOW *win, Asteroid *a) {
     if(!a->active) return;
     for(int i = 0; i < a->height; i++){
+        if(!a->row_active[i]) continue;
         for(int j = 0; j < a->width; j++){
             char c = a->shape[i][j];
             if(c != ' '){

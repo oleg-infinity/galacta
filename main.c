@@ -9,6 +9,9 @@
 typedef struct {
     int x;
     int y;
+    int width;
+    int height;
+    const char **shape;
     int symbol;
 } Player;
 
@@ -27,7 +30,14 @@ void move_right(Player *p, int max_x) {
     }
 }
 void draw_player(WINDOW *win, Player *p) {
-    mvwprintw(win, p->y, p->x, "%c", p->symbol);
+    for(int i = 0; i < p->height; i++){
+        for(int j = 0; j < p->width; j++){
+            char c = p->shape[i][j];
+            if(c != ' '){
+                mvwprintw(win, (int)(p->y) + i, p->x + j, "%c", c);
+            }
+        }    
+    }
 }
 
 int main(){
@@ -55,8 +65,12 @@ int main(){
     wrefresh(win);
 
     int x = win_width / 2; 
-    int y = win_height - 2;
-    Player player = {x, y, '^'};
+    int y = win_height - 3;
+    const char *shatl[] = {
+        " ^ ",
+        "/0\\"
+    };
+    Player player = {x, y, 3, 2, shatl};
 
     Asteroid asteroids[MAX_ASTEROIDS];
     for(int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = 0;
@@ -80,7 +94,7 @@ int main(){
 
     const char *bigger_circle_shape[] = {
         " .-*-. ",
-        "<|   |>",
+        "(     )",
         " '*-*' "
     };
     Asteroid asteroid4 = {0, 0, 7, 3, bigger_circle_shape, 0.0f, 0};
@@ -98,7 +112,7 @@ int main(){
         ch = wgetch(win);
 
         if(ch == 'a' && player.x > 1) move_left(&player, 1);
-        if(ch == 'd' && player.x < win_width - 2) move_right(&player, win_width - 2);
+        if(ch == 'd' && player.x < win_width - 4) move_right(&player, win_width - 4);
 
         switch (ch) {
             case KEY_LEFT:  
@@ -107,8 +121,8 @@ int main(){
                 break;
             }
             case KEY_RIGHT: 
-            if(player.x < win_width - 2) {
-                move_right(&player, win_width - 2);
+            if(player.x < win_width - 4) {
+                move_right(&player, win_width - 4);
                 break;
             }
         }
