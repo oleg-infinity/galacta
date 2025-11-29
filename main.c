@@ -47,30 +47,42 @@ int main(){
     for(int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = 0;
 
     const char *smallest_circle_shape[] = {
-        "@"
+        "*"
     };
     Asteroid asteroid1 = {0, 0, 1, 1, smallest_circle_shape, 0.0f, 0};
 
     const char *small_circle_shape[] = {
+        "@"
+    };
+    Asteroid asteroid2 = {0, 0, 1, 1, small_circle_shape, 0.0f, 0};
+
+    const char *small_cube_shape[] = {
+        "/&.",
+        "*@'"
+    };
+    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0};
+
+    const char *mid_circle_shape[] = {
         ".-.",
         "'-'"
     };
-    Asteroid asteroid2 = {0, 0, 3, 2, small_circle_shape, 0.0f, 0};
+    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0};
 
     const char *big_circle_shape[] = {
         "/**\\",
         "\\__/"
     };
-    Asteroid asteroid3 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0};
+    Asteroid asteroid5 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0};
 
     const char *bigger_circle_shape[] = {
         " .-*-. ",
-        "(     )",
+        "/     \\",
+        "\\     /",
         " '*-*' "
     };
-    Asteroid asteroid4 = {0, 0, 7, 3, bigger_circle_shape, 0.0f, 0};
+    Asteroid asteroid6 = {0, 0, 7, 4, bigger_circle_shape, 0.0f, 0};
 
-    Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4};
+    Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4, &asteroid5, &asteroid6};
     int num_types = sizeof(asteroid_types) / sizeof(asteroid_types[0]);
     
     int spawn_timer = 0;
@@ -111,28 +123,15 @@ int main(){
             }
             case ' ':
                 if(bullets_left > 0){
-                    for(int i = 0; i < MAX_BULLETS; i++){
-                        if(!bullets[i].active){
-                            shoot(bullets, bullets_left, &player);
-                            bullets[i].active = 1;
-                            bullets_left--;
-                            break;
-                        }
-                    }
+                    shoot(bullets, MAX_BULLETS, &player);
+                    bullets_left--;
                 }
                 break;
         }
 
-        move_bullets(bullets, bullets_left);
-        draw_bullets(win, bullets, bullets_left);
 
-        asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval);
-
-        for(int i = 0; i < MAX_ASTEROIDS; i++){
-            move_down(&asteroids[i], win_height - 1);
-            draw_asteroid(win, &asteroids[i]);
-        }
-
+        move_bullets(bullets, MAX_BULLETS);
+        draw_bullets(win, bullets, MAX_BULLETS);
         for(int b = 0; b < MAX_BULLETS; b++){
             if(!bullets[b].active) continue;
 
@@ -151,6 +150,15 @@ int main(){
             bullets_recover_timer = 0;
         }
 
+
+        asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval);
+
+        for(int i = 0; i < MAX_ASTEROIDS; i++){
+            move_down(&asteroids[i], win_height - 1);
+            draw_asteroid(win, &asteroids[i]);
+        }
+
+
         draw_player(win, &player);
         for(int i = 0; i < MAX_ASTEROIDS; i++){
             if(check_collision(&asteroids[i], &player)){
@@ -167,6 +175,15 @@ int main(){
             score++;
             score_timer = 0;
         }
+
+        float difficulty_factor = 1.0 + (score / 100.0);
+        for(int i = 0; i < MAX_ASTEROIDS; i++){
+            if(asteroids[i].active){
+                asteroids[i].speed = ((rand() % 3) + 1) / 100.0 * difficulty_factor;
+            }
+        }
+        min_spawn_delay = 20 - (score / 50);
+        if(min_spawn_delay < 5) min_spawn_delay = 5;
 
         wrefresh(win);
 
