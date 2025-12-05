@@ -136,6 +136,7 @@ int main(){
     int shatle_spawn_timer = 0;
     int shatle_sequence[3] = {0, 1, 0};
     int shatle_sequence_index = 0;
+    int waiting_for_shatle_wave = 0;
 
     int bullets_recover_timer = 0;
     int bullets_left= MAX_BULLETS;
@@ -200,30 +201,10 @@ int main(){
             }
             bullets_recover_timer = 0;
         }
-        /*
-        if(score >= 100 && !shatle_wave_active) {
-            last_shatle_wave_score = score / 100;
-            shatle_wave_active = 1;
-            shatle_to_spawn = 3; // 1 великий + 2 маленьких
-            shatle_sequence[0] = 1; // великий
-            shatle_sequence[1] = 0; // маленький
-            shatle_sequence[2] = 0; // маленький
-            shuffle_sequence(shatle_sequence, 3); // випадковий порядок
-            shatle_sequence_index = 0;
-            shatle_spawn_timer = 0; // одразу стартує спавн
-        }
-        */
 
-        if(score >= 100 && !shatle_wave_active && !shatle_wave_done){
+        if((score / 100) > last_shatle_wave_score && !shatle_wave_active){
+            waiting_for_shatle_wave = 1;
             last_shatle_wave_score = score / 100;
-            shatle_wave_active = 1;
-            shatle_to_spawn = 3;
-            shatle_sequence[0] = 1;
-            shatle_sequence[1] = 0;
-            shatle_sequence[2] = 0;
-            shuffle_sequence(shatle_sequence, 3);
-            shatle_sequence_index = 0;
-            shatle_spawn_timer = 0; // одразу стартує
         }
 
        if(shatle_wave_active && shatle_to_spawn > 0){
@@ -243,20 +224,27 @@ int main(){
             draw_shatle(win, &shatles[i]);
         }
 
-        if(!shatle_wave_active){
+        if(!waiting_for_shatle_wave && !shatle_wave_active){
             asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval, shatle_wave_active);
-            for(int i = 0; i < MAX_ASTEROIDS; i++){
-                if(asteroids[i].active){
-                    move_down(&asteroids[i], win_height - 1);
-                    draw_asteroid(win, &asteroids[i]);
-                }
+        }
+        if(waiting_for_shatle_wave){
+            if(!any_asteroid_active(asteroids, MAX_ASTEROIDS)){
+                waiting_for_shatle_wave = 0;
+                last_shatle_wave_score = score / 100;
+                shatle_wave_active = 1;
+                shatle_to_spawn = 3;
+                shatle_sequence[0] = 1;
+                shatle_sequence[1] = 0;
+                shatle_sequence[2] = 0;
+                shuffle_sequence(shatle_sequence, 3);
+                shatle_sequence_index = 0;
+                shatle_spawn_timer = 0;
             }
-        } else {
-            for(int i = 0; i < MAX_ASTEROIDS; i++){
-                if(asteroids[i].active){
-                    move_down(&asteroids[i], win_height - 1);
-                    draw_asteroid(win, &asteroids[i]);
-                }
+        }
+        for(int i = 0; i < MAX_ASTEROIDS; i++){
+            if(asteroids[i].active){
+                move_down(&asteroids[i], win_height - 1);
+                draw_asteroid(win, &asteroids[i]);
             }
         }
 
