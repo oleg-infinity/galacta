@@ -7,14 +7,14 @@
 // player
 
 void move_left(Player *p, int min_x) {
-    if(p->x > min_x+1){
+    if(p->x > min_x+2){
         p->x-=2;
     } else {
         p->x-=1;
     }
 }
 void move_right(Player *p, int max_x) {
-    if(p->x < max_x-1){
+    if(p->x < max_x-2){
         p->x+=2; 
     } else {
         p->x+=1; 
