@@ -1,6 +1,7 @@
 //spawn.c
 
 #include <stdlib.h>
+#include <string.h>
 #include "spawn.h"
 #include "player.h"
 
@@ -73,7 +74,8 @@ int choose_spawn_x(SpawnZone zones[], int zone_count, int width){
 
 int min_spawn_delay = 20;
 
-void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, int num_types, int win_width, int *timer, int *interval){
+void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, int num_types, int win_width, int *timer, int *interval, int shatle_wave){
+    //if(shatle_wave > 0) return;
     (*timer)++;
 
     if(*timer < min_spawn_delay) return;
@@ -142,6 +144,13 @@ void draw_asteroid(WINDOW *win, Asteroid *a) {
     }
 }
 
+int any_asteroid_active(Asteroid asteroids[], int max){
+    for(int i = 0; i < max; i++){
+        if(asteroids[i].active) return 1;
+    }
+    return 0;
+}
+
 int check_collision(Asteroid *a, Player *p){
     if(!a->active) return 0;
 
@@ -176,8 +185,8 @@ int bullet_hits_asteroid(Bullet *b, Asteroid *a){
         if(!a->row_active[row]) continue;
 
         int y = ay + row;
-        int x1 = a->x;
-        int x2 = a->x + a->width - 1;
+        int x1 = (int)(a->x);
+        int x2 = (int)(a->x) + a->width - 1;
 
         if(b->y == y && b->x >= x1 && b->x <= x2){
             a->row_active[row] = 0; 
@@ -191,6 +200,100 @@ int bullet_hits_asteroid(Bullet *b, Asteroid *a){
         if(a->row_active[i]) alive = 1;
     }
     if(!alive) a->active = 0;
+
+    return 0;
+}
+
+int shatles_min_spawn_delay = 30;
+
+int shatles_spawn(Shatle shatles[], int max_shatles, Shatle **types, int num_shatle_types, int type_index, int win_height, int win_width){
+    if(num_shatle_types <= 0) return 0;
+    if(type_index < 0) type_index = 0;
+    if(type_index >= num_shatle_types) type_index = 0;
+
+    Shatle *tpl = types[type_index];
+
+    for(int i = 0; i < max_shatles; i++){
+        if(!shatles[i].active){
+            shatles[i].x = -tpl->width;
+            shatles[i].target_x = (win_width - tpl->width) / 2;
+            shatles[i].y = (rand() % (win_height - 10)) + 2;
+            shatles[i].width = tpl->width;
+            shatles[i].height = tpl->height;
+            shatles[i].shape = tpl->shape;
+            shatles[i].speed = 0.15 + ((float)(rand() % 3)) * 0.05;
+            shatles[i].hp = tpl->hp;
+            shatles[i].active = 1;
+            shatles[i].bonus_score = tpl->bonus_score;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void shuffle_sequence(int *seq, int n){
+    for(int i = 2; i > 0; i--){
+        int j = rand() % (i + 1);
+        int tmp = seq[i];
+        seq[i] = seq[j];
+        seq[j] = tmp;
+    }
+};
+
+void move_shatle(Shatle *s, int max_x){
+    if(!s->active) return;
+
+    if(s->x < s->target_x){
+        s->x += s->speed;
+        if(s->x > s->target_x){
+            s->x = s->target_x;
+        }
+    } else {
+        s->x += s->speed;
+    }
+
+    if((int)s->x > max_x){
+        s->active = 0;
+    }
+}
+
+void draw_shatle(WINDOW *win, Shatle *s){
+    if(!s->active) return;
+
+    int int_x = (int)(s->x);
+
+    for(int i = 0; i < s->height; i++){
+        int row_len = strlen(s->shape[i]);
+        for(int j = 0; j < row_len; j++){
+            char c = s->shape[i][j];
+            if(c != ' ' && int_x + j >= 0 && int_x + j < getmaxx(win)){
+                mvwprintw(win, s->y + i, (int)s->x + j, "%c", c);
+            }
+        }
+    }
+}
+
+int bullet_hits_shatle(Bullet *b, Shatle *s){
+    if(!b->active || !s->active) return 0;
+
+    for(int i = 0; i < s->height; i++){
+        for(int j = 0; j < s->width; j++){
+            if(s->shape[i][j] == ' ') continue;
+
+            if(b->x >= (int)(s->x) && b->x < (int)(s->x) + s->width && b->y == s->y && b->y < s->y + s->height){
+                b->active = 0;
+                s->hp--;
+
+                if(s->hp <= 0){
+                    int bonus = s->bonus_score;
+                    s->active = 0;
+                    return bonus;
+                }
+                s->hp--;
+                return 1;
+            }
+        }
+    }
 
     return 0;
 }
