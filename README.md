@@ -1,1 +1,3 @@
-gcc main.c spawn.c -lncurses -o game
+make - compile
+make run - run game
+make clean - clean dir with compiled files
