@@ -40,7 +40,7 @@ int build_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], in
 
 int choose_spawn_x(SpawnZone zones[], int zone_count, int width);
 
-extern int min_spawn_delay;
+extern float min_spawn_delay;
 
 void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, int num_types, int win_width, int *timer, int *interval, int shatle_wave);
 

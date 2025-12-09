@@ -44,8 +44,8 @@ int build_spawn_zones(SpawnZone zones[], int max_zones, Asteroid asteroids[], in
     int last_end = 1;
 
     for(int i = 0; i < c; i++){
-        int left = act[i]->x - 3;
-        int right = act[i]->x + act[i]->width + 2;
+        int left = act[i]->x - 1;
+        int right = act[i]->x + act[i]->width + 1;
         if(left > last_end){
             zones[z].start = last_end;
             zones[z].end = left - 1;
@@ -72,7 +72,7 @@ int choose_spawn_x(SpawnZone zones[], int zone_count, int width){
     return (rand() % (max_x - min_x + 1)) + min_x;
 }
 
-int min_spawn_delay = 20;
+float min_spawn_delay = 20;
 
 void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, int num_types, int win_width, int *timer, int *interval, int shatle_wave){
     //if(shatle_wave > 0) return;
@@ -84,7 +84,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
 
     int too_close = 0;
     for(int k = 0; k < max_asteroids; k++){
-        if(asteroids[k].active && asteroids[k].y < 3.0f) { too_close = 1; break; }
+        if(asteroids[k].active && asteroids[k].y < 1.0f) { too_close = 1; break; }
     }   
     if(too_close) return;
 
@@ -102,7 +102,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             asteroids[i].width = tpl->width;
             asteroids[i].height = tpl->height;
             asteroids[i].shape = tpl->shape;
-            asteroids[i].speed = ((rand() % 3) + 1) / 100.0;
+            asteroids[i].speed = ((rand() % 3) + 4) / 100.0;
             asteroids[i].active = 1;
 
             for(int r = 0; r < asteroids[i].height; r++){
@@ -110,7 +110,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             }
 
             *timer = 0;
-            *interval = (rand() % 60) + 40;
+            *interval = (rand() % 20) + 10;
             return;
         }
     }
@@ -151,6 +151,7 @@ int any_asteroid_active(Asteroid asteroids[], int max){
     return 0;
 }
 
+/*
 int check_collision(Asteroid *a, Player *p){
     if(!a->active) return 0;
 
@@ -169,6 +170,41 @@ int check_collision(Asteroid *a, Player *p){
                     if(col_x == gx && row_y == gy){
                         return 1;
                     }
+                }
+            }
+        }
+    }
+    return 0;
+}
+    */
+
+int check_collision(Asteroid *a, Player *p){
+    if(!a->active) return 0;
+
+    if(p->x + p->width < a->x ||
+       p->x > a->x + a->width ||
+       p->y + p->height < (int)(a->y) ||
+       p->y > (int)(a->y) + a->height) {
+        return 0;
+    }
+
+    for(int i = 0; i < p->height; i++){
+        for(int j = 0; j < p->width; j++){
+            char p_char = p->shape[i][j];
+
+            if(p_char == ' ') continue;
+
+            int world_x = p->x + j;
+            int world_y = p->y + i;
+
+            if(world_x >= a->x && world_x < a->x + a->width && world_y >= a->y && world_y < a->y + a->height){
+                int a_i = world_y - a->y;
+                int a_j = world_x - a->x;
+
+                char a_char = a->shape[a_i][a_j];
+
+                if(a_char != ' '){
+                    return 1;
                 }
             }
         }
@@ -217,11 +253,11 @@ int shatles_spawn(Shatle shatles[], int max_shatles, Shatle **types, int num_sha
         if(!shatles[i].active){
             shatles[i].x = -tpl->width;
             shatles[i].target_x = (win_width - tpl->width) / 2;
-            shatles[i].y = (rand() % (win_height - 10)) + 2;
+            shatles[i].y = (rand() % (win_height - 14)) + 2;
             shatles[i].width = tpl->width;
             shatles[i].height = tpl->height;
             shatles[i].shape = tpl->shape;
-            shatles[i].speed = 0.15 + ((float)(rand() % 3)) * 0.05;
+            shatles[i].speed = 0.20 + ((float)(rand() % 3)) * 0.05;
             shatles[i].hp = tpl->hp;
             shatles[i].active = 1;
             shatles[i].bonus_score = tpl->bonus_score;

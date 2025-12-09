@@ -1,15 +1,40 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ncurses.h>
-#include <stdlib.h>
 #include <string.h>
 #include "spawn.h"
 #include "player.h"
 #include "skins.h"
+#include "score.h"
 
-#define MAX_ASTEROIDS 15
+#define MAX_ASTEROIDS 50
 #define MAX_BULLETS 10
 #define MAX_SHATLES 3
+
+void reset_game(Player *player, Bullet bullets[], Shatle shatles[], Asteroid asteroids[], int max_asteroids, int max_shatles, int *score, int *bullets_left, int *waiting_for_shatle_wave, int *shatle_wave_active, int *shatle_to_spawn, int *shatle_sequence_index, int *last_shatle_wave_score, int *shatle_wave_done, int *shatle_spawn_timer){
+    *score = 0;
+    *bullets_left = MAX_BULLETS;
+
+    for(int i = 0; i < MAX_BULLETS; i++){
+        bullets[i].active = 0;
+    }
+
+    for(int i = 0; i < max_asteroids; i++){
+        asteroids[i].active = 0;
+    }
+
+    for(int i = 0; i < max_shatles; i++){
+        shatles[i].active = 0;
+    }
+
+    *waiting_for_shatle_wave = 0;
+    *shatle_wave_active = 0;
+    *shatle_to_spawn = 0;
+    *shatle_sequence_index = 0;
+    *last_shatle_wave_score = 0;
+    *shatle_wave_done = 0;
+    *shatle_spawn_timer = 0;
+}
 
 int main(){
     srand((unsigned)time(NULL));
@@ -51,13 +76,6 @@ int main(){
 
     Shatle shatles[MAX_SHATLES];
     for(int i = 0; i < MAX_SHATLES; i++) shatles[i].active = 0;
-    
-//    const char *smallest_shatle_shape[] = {
-//        "-*\\.  ",
-//        "-+|:=>",
-//        "-*/'  ",
-//    };
-//    Shatle shatle1 = {0, 0, 6, 3, smallest_shatle_shape, 0.0f, 0, 1, 10};
 
     const char *big_shatle_shape[] = {
         "            >>>>>===[[ EMPEROR CORE ]]===<<<<<                   ",
@@ -85,6 +103,11 @@ int main(){
 
     Asteroid asteroids[MAX_ASTEROIDS];
     for(int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = 0;
+
+    const char *smallest_rub_shape[] = {
+        "|"
+    };
+    Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0};
 
     const char *smallest_circle_shape[] = {
         "*"
@@ -132,7 +155,7 @@ int main(){
     Asteroid asteroid7 = {0, 0, 13, 5, biggest_circle_shape, 0.0f, 0};
 
 
-    Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4, &asteroid5, &asteroid6, &asteroid7};
+    Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4, &asteroid5, &asteroid6, &asteroid7, &asteroid8};
     int num_types = sizeof(asteroid_types) / sizeof(asteroid_types[0]);
 
 
@@ -215,12 +238,17 @@ int main(){
                 }
 
             case 'g':
+                reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer);
+
+                ch = 0;
+
                 while (ch != 'q') {
                     werase(win);
                     box(win, 0, 0);
                     mvwprintw(win, 1, 1, "Press 'q' to quit");
 
-                    mvwprintw(win, 1, win_width - 12, "Score: %d", score);
+                    mvwprintw(win, 1, win_width - 12, "Best: %d", load_score());
+                    mvwprintw(win, 2, win_width - 12, "Score: %d", score);
                     mvwprintw(win, 1, win_width / 2 - 3, "Bullets: %d", bullets_left);
 
                     ch = wgetch(win);
@@ -292,7 +320,15 @@ int main(){
                     }
 
                     if(!waiting_for_shatle_wave && !shatle_wave_active){
-                        asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval, shatle_wave_active);
+                        int max_active_asteroids = 15 + score / 10;
+                        if(max_active_asteroids > MAX_ASTEROIDS) max_active_asteroids = MAX_ASTEROIDS;
+                        int active_count = 0;
+                        for(int i = 0; i < MAX_ASTEROIDS; i++){
+                            if(asteroids[i].active) active_count++;
+                        }
+                        if(active_count < max_active_asteroids){
+                            asteroids_spawn(asteroids, MAX_ASTEROIDS, asteroid_types, num_types, win_width, &spawn_timer, &spawn_interval, shatle_wave_active);
+                        }
                     }
                     if(waiting_for_shatle_wave){
                         if(!any_asteroid_active(asteroids, MAX_ASTEROIDS)){
@@ -346,14 +382,24 @@ int main(){
                         score_timer = 0;
                     }
 
-                    float difficulty_factor = 1.0 + (score / 100.0);
+                    float difficulty_factor = 1.0 + (score / 100);
+                    if(difficulty_factor > 10) difficulty_factor = 10;
+
                     for(int i = 0; i < MAX_ASTEROIDS; i++){
                         if(asteroids[i].active){
-                            asteroids[i].speed = ((rand() % 3) + 1) / 100.0 * difficulty_factor;
+                            asteroids[i].speed = ((rand() % 3) + 4) / 100.0 * difficulty_factor;
                         }
                     }
-                    min_spawn_delay = 20 - (score / 50);
-                    if(min_spawn_delay < 5) min_spawn_delay = 5;
+                    for(int i = 0; i < MAX_SHATLES; i++){
+                        if(shatles[i].active){
+                            shatles[i].speed = (0.20 + ((float)(rand() % 3)) * 0.05) * difficulty_factor;
+                        }
+                    }
+                    min_spawn_delay = 10 - (score / 10);
+                    if(min_spawn_delay < 0.05) min_spawn_delay = 0.05;
+                    
+                    int max_active_asteroids = 20 + score / 10;
+                    if(max_active_asteroids > MAX_ASTEROIDS) max_active_asteroids = MAX_ASTEROIDS;
 
                     wrefresh(win);
 
@@ -366,5 +412,6 @@ int main(){
     }
     delwin(win);
     endwin();
+    if(score > load_score()) save_score(score);
     return 0;
 }
