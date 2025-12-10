@@ -47,8 +47,8 @@ int main(){
     int max_x, max_y;
     getmaxyx(stdscr, max_y, max_x);
 
-    int win_width = (max_x < 75) ? max_x : 75;
-    int win_height = (max_y < 25) ? max_y : 25;
+    int win_width = (max_x < 75) ? max_x : 100;
+    int win_height = (max_y < 25) ? max_y : 35;
     int start_x = (max_x - win_width) / 2;
     int start_y = (max_y - win_height) / 2;
     
@@ -209,23 +209,16 @@ int main(){
                     draw_skin(win, available_skins[skin_ship], skin_width, skin_height, start_y, start_x);
 
                     switch (ch){
-                        case '1':
-                            skin_ship = 0;
-                            player.shape = ship_skin1;
-                            break;
-                        case '2':
-                            player.shape = ship_skin2;
-                            skin_ship = 1;                            
-                            break;
-                        case '3':
-                            player.shape = ship_skin3;
-                            skin_ship = 2;
-                            break;
-                        case '4':
-                            player.shape = ship_skin4;
-                            skin_ship = 3;
+                        case ' ':
+                            skin_ship++;
+                            if(skin_ship >= num_available_skins){
+                                skin_ship = 0;
+                            }
+                            player.shape = available_skins[skin_ship];
                             break;
                     }
+
+                    mvwprintw(win, (win_height / 2) + 4, (win_width / 2) - 12, "PRESS SPACE TO CHANGE SKIN");
 
                     player.height = 0;
                     while(player.shape[player.height] != NULL){
@@ -236,6 +229,7 @@ int main(){
                     wrefresh(win);
                     ch = wgetch(win);
                 }
+                break;
 
             case 'g':
                 reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer);

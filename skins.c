@@ -33,7 +33,28 @@ const char *ship_skin4[] = {
     NULL
 };
 
-const char **available_skins[] = {ship_skin1, ship_skin2, ship_skin3, ship_skin4};
+const char *ship_skin5[] = {
+    "  .  ",
+    " / \\ ",
+    "/=O=\\",
+    NULL
+};
+
+const char *ship_skin6[] = {
+    " . . ",
+    "/|^|\\",
+    "#0_0&",
+    NULL
+};
+
+const char *ship_skin7[] = {
+    "  .  ",
+    " /|\\ ",
+    "/0+0\\",
+    NULL
+};
+
+const char **available_skins[] = {ship_skin1, ship_skin2, ship_skin3, ship_skin4, ship_skin5, ship_skin6, ship_skin7};
 int num_available_skins = sizeof(available_skins) / sizeof(available_skins[0]);
 
 void draw_skin(WINDOW *win, const char **skin, int skin_width, int skin_height, int start_y, int start_x){
