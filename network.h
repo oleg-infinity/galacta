@@ -41,6 +41,7 @@ typedef struct {
     int active;
     int hp;
     int bonus_score;
+    int type_id;
 } SyncShatle;
 
 typedef struct {

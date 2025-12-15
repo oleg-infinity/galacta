@@ -270,6 +270,26 @@ int run_server_game(int client_fd, int server_skin_index ){
             }
         }
 
+        state.active_shatles_count = 0;
+        for (int i = 0; i < MAX_SHATLES; i++) {
+            if (shatles[i].active && state.active_shatles_count < MAX_SYNC_SHATLES) {
+                SyncShatle *ss = &state.shatles[state.active_shatles_count];
+                
+                ss->active = 1;
+                ss->x = shatles[i].x;
+                ss->y = shatles[i].y;
+                ss->width = shatles[i].width;
+                ss->height = shatles[i].height;
+                
+                if (shatles[i].width == 64) {
+                    ss->type_id = 1;
+                } else {
+                    ss->type_id = 0;
+                }
+                state.active_shatles_count++;
+            }
+        }
+
         state.active_bullet_count = 0;
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (bullets[i].active && state.active_bullet_count < MAX_SYNC_BULLETS) {

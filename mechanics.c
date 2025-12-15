@@ -127,7 +127,7 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     delwin(wait_win);
     endwin(); 
     close(server_fd);
--
+
     if (client_fd >= 0) {
         printf("[SERVER] Client connected! Entering Lobby...\n");
         int ready = display_server_lobby(height, width); 

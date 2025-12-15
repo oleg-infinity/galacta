@@ -278,6 +278,23 @@ int run_client_game(int sock, int client_skin_index) {
                 }
             }
 
+            for (int i = 0; i < state.active_shatles_count; i++) {
+                SyncShatle *ss = &state.shatles[i];
+                
+                if (ss->type_id >= 0 && ss->type_id < num_shatle_types) {
+                    Shatle temp_s = {0};
+                    temp_s.x = ss->x;
+                    temp_s.y = ss->y;
+                    temp_s.width = ss->width;
+                    temp_s.height = ss->height;
+                    temp_s.active = 1;
+                    
+                    temp_s.shape = shatle_types[ss->type_id]->shape;
+                    
+                    draw_shatle(win, &temp_s);
+                }
+            }
+
             draw_player(win, &p1); 
             draw_player(win, &p2); 
             
