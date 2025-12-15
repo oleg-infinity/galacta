@@ -176,7 +176,17 @@ int main() {
                 current_action = main_menu(win, win_height, win_width, ch);
                 break;
             case ACTION_PLAY_SINGLE:
-                while(ch != 'q' && game_running) {
+                while(game_running) {
+                    
+                    ch = wgetch(win);
+
+                    if (ch == 'q' || ch == 'Q') {
+                        if(score > load_score()) save_score(score);
+                        delwin(win);
+                        endwin();
+                        return 0;
+                    }
+
                     werase(win);
                     box(win, 0, 0);
                     mvwprintw(win, 1, 1, "Press 'q' to quit");
@@ -184,8 +194,6 @@ int main() {
                     mvwprintw(win, 1, win_width - 12, "Best: %d", load_score());
                     mvwprintw(win, 2, win_width - 12, "Score: %d", score);
                     mvwprintw(win, 1, win_width / 2 - 3, "Bullets: %d", player.bullets_left);
-
-                    ch = wgetch(win);
 
                     switch (ch){
                         case 'a':
@@ -214,6 +222,7 @@ int main() {
                     draw_player(win, &player);
 
                     if (!game_running) {
+                        if(score > load_score()) save_score(score);
                         werase(win);
                         box(win, 0, 0);
                         mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
@@ -227,10 +236,11 @@ int main() {
                     
                     wrefresh(win);
 
-                    napms(10);
+                    napms(16);
                 }
                 current_action = ACTION_MENU;
-                reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);                break;
+                reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);                
+                break;
             case ACTION_SKINS:
                 if (ch == 'q') {
                     current_action = ACTION_MENU;
@@ -336,10 +346,9 @@ int main() {
                 break;   
         }
         wrefresh(win);
-        napms(10);
+        napms(16);
     }
     delwin(win);
     endwin();
-    if(score > load_score()) save_score(score);
     return 0;
 }

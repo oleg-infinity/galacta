@@ -217,6 +217,7 @@ int run_server_game(int client_fd, int server_skin_index ){
         ch = wgetch(win);
 
         if (ch == 'q' || ch == 'Q') {
+            if(score > load_score()) save_score(score);
             delwin(win);
             endwin();
             return 0;
@@ -303,11 +304,15 @@ int run_server_game(int client_fd, int server_skin_index ){
 
         send(client_fd, &state, sizeof(state), 0);
 
-        if(!game_running) {
+        if (!game_running) {
+            if(score > load_score()) save_score(score);
+            werase(win);
+            box(win, 0, 0);
             mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
+            mvwprintw(win, win_height / 2 + 1, win_width / 2 - 12, "Final Score: %d", score);
             wrefresh(win);
-            napms(2000);
-            break;
+            napms(3000); 
+            break; 
         }
         
         draw_player(win, &p1); 
@@ -322,7 +327,7 @@ int run_server_game(int client_fd, int server_skin_index ){
         wrefresh(win);
         napms(16); 
     }
-
+    if(score > load_score()) save_score(score);
     delwin(win);
     endwin();
     close(client_fd);

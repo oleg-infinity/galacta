@@ -218,6 +218,7 @@ int run_client_game(int sock, int client_skin_index) {
         ch = wgetch(win); 
 
         if (ch == 'q' || ch == 'Q') {
+            if(score > load_score()) save_score(score);
             delwin(win);
             endwin();
             return ACTION_MENU;
@@ -236,6 +237,7 @@ int run_client_game(int sock, int client_skin_index) {
             box(win, 0, 0);
             
             if (state.game_over) {
+                if(score > load_score()) save_score(score);
                 box(win, 0, 0);
                 mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!"); 
                 wrefresh(win);
@@ -307,7 +309,6 @@ int run_client_game(int sock, int client_skin_index) {
             wrefresh(win);
         }
     }
-
     delwin(win);
     endwin();
     close(sock);
