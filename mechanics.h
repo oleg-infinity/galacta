@@ -6,12 +6,12 @@
 #include "spawn.h"
 #include "network.h"
 
-#define ACTION_MENU      0 // Залишитися в меню (або повернутися до нього)
-#define ACTION_PLAY_SINGLE 1 // Запустити одиночну гру
-#define ACTION_SKINS     2 // Перейти до меню скінів (якщо це окремий екран)
-#define ACTION_HOST      3 // Запустити хост-сервер
-#define ACTION_JOIN      4 // Запустити клієнта
-#define ACTION_QUIT      5 // Вийти з програми
+#define ACTION_MENU      0
+#define ACTION_PLAY_SINGLE 1
+#define ACTION_SKINS     2 
+#define ACTION_HOST      3
+#define ACTION_JOIN      4 
+#define ACTION_QUIT      5 
 
 #define MAX_ASTEROIDS 50
 #define MAX_BULLETS 10

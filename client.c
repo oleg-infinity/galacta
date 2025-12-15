@@ -27,7 +27,6 @@ int run_client_connect(const char* ip, int port) {
     serv.sin_family = AF_INET;
     serv.sin_port = htons(port);
     
-    // Перетворення IP-адреси з текстового формату в бінарний
     if (inet_pton(AF_INET, ip, &serv.sin_addr) <= 0) {
         fprintf(stderr, "Invalid address/ Address not supported\n");
         close(sock);
@@ -36,16 +35,12 @@ int run_client_connect(const char* ip, int port) {
 
     printf("[CLIENT] Attempting to connect to: %s:%d\n", ip, port);
     
-    // Встановлення з'єднання з сервером
     if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) < 0) { 
         perror("[CLIENT] Connection failed"); 
         close(sock);
         return 1; 
     }
 
-    // Якщо ми успішно підключилися через командний рядок, 
-    // ми повинні одразу запустити ігровий цикл (без лобі).
-    // Лобі викликається з start_multiplayer_menu.
     printf("[CLIENT] Connected! Starting game...\n");
     return run_client_game(sock, 0); 
 }
@@ -53,7 +48,6 @@ int run_client_connect(const char* ip, int port) {
 
 int run_client_game(int sock, int client_skin_index) {
 
-    // --- 1. ІНІЦІАЛІЗАЦІЯ Ncurses та WINDOW ---
     initscr();
     cbreak();
     noecho();
@@ -66,7 +60,6 @@ int run_client_game(int sock, int client_skin_index) {
     int win_width = (max_x < desired_max_width ) ? max_x : desired_max_width ;
     int win_height = (max_y < desired_max_height ) ? max_y : desired_max_height ;
     
-    // Перевірка на мінімальний розмір, щоб не було newwin(0, X, Y, Z)
     if (win_width < 10 || win_height < 5) {
         endwin();
         fprintf(stderr, "Terminal is too small to display the window.\n");
@@ -79,10 +72,7 @@ int run_client_game(int sock, int client_skin_index) {
     box(win, 0, 0);
     nodelay(win, TRUE);
     keypad(win, TRUE);
-    // --------------------------------------------------
     
-    // --- 2. ІНІЦІАЛІЗАЦІЯ ГРАВЦІВ ---
-    // Нам потрібно визначити параметри скіна
     Bullet bullets[MAX_BULLETS];
 
     Shatle shatles[MAX_SHATLES];
@@ -185,40 +175,34 @@ int run_client_game(int sock, int client_skin_index) {
     int x2 = win_width / 2 - 2;
     int y2 = win_height - 7;
 
-    Player p1 = {x1, y1, p1_skin_width, p1_skin_height, available_skins[p1_skin_ship], MAX_BULLETS, 0, 1}; // Серверний гравець
-    Player p2 = {x2, y2, p2_skin_width, p2_skin_height, available_skins[p2_skin_ship], MAX_BULLETS, 0, 1};  // Клієнтський гравець
+    Player p1 = {x1, y1, p1_skin_width, p1_skin_height, available_skins[p1_skin_ship], MAX_BULLETS, 0, 1}; 
+    Player p2 = {x2, y2, p2_skin_width, p2_skin_height, available_skins[p2_skin_ship], MAX_BULLETS, 0, 1};  
        
     char skin_sync_buf[32];
     snprintf(skin_sync_buf, sizeof(skin_sync_buf), "SKIN %d", client_skin_index); 
     send(sock, skin_sync_buf, strlen(skin_sync_buf), 0);
 
     char host_skin_recv_buf[32];
-    int host_skin_index_new = 0; // За замовчуванням
-    
-    // Очікуємо пакет HOST_SKIN від сервера (блокуючий виклик, поки не отримаємо)
+    int host_skin_index_new = 0; 
+
     if (recv(sock, host_skin_recv_buf, sizeof(host_skin_recv_buf) - 1, 0) > 0) {
         host_skin_recv_buf[31] = '\0';
         if (sscanf(host_skin_recv_buf, "HOST_SKIN %d", &host_skin_index_new) == 1) {
             
-            // Якщо індекс коректний, оновлюємо p1_skin_ship
-            // (Потрібна константа num_available_skins)
             if (host_skin_index_new >= 0 && host_skin_index_new < num_available_skins) { 
                 p1_skin_ship = host_skin_index_new;
             }
         }
     }
     
-    // Перерахунок розмірів P1 з новим скіном
     p1_skin_height = 0;
     while(available_skins[p1_skin_ship][p1_skin_height] != NULL){ p1_skin_height++; }
     p1_skin_width = strlen(available_skins[p1_skin_ship][0]);
     
-    // Оновлення структури P1
-    // Оскільки P1 вже ініціалізовано, ми можемо просто оновити його поля
     p1.width = p1_skin_width;
     p1.height = p1_skin_height;
     p1.shape = available_skins[p1_skin_ship];
-    p1.x = win_width / 2 - (p1_skin_width / 2); // Центруємо P1 згідно з новою шириною
+    p1.x = win_width / 2 - (p1_skin_width / 2); 
 
     char buf[64];
     int ch; 
@@ -239,17 +223,15 @@ int run_client_game(int sock, int client_skin_index) {
             return ACTION_MENU;
         }
         
-        // B. НАДСИЛАННЯ ВВОДУ СЕРВЕРУ
         if (ch != ERR) {
             snprintf(buf, sizeof(buf), "KEY %c", ch); 
             send(sock, buf, strlen(buf), 0);
         }
         
-        // C. ПРИЙОМ СТАНУ СВІТУ (P1 та P2)
         GameState state;
         int n = recv(sock, &state, sizeof(state), MSG_DONTWAIT);
         
-        if (n == sizeof(state)) { // Перевірка, що отримано повний пакет
+        if (n == sizeof(state)) { 
             werase(win);
             box(win, 0, 0);
             
@@ -257,11 +239,10 @@ int run_client_game(int sock, int client_skin_index) {
                 box(win, 0, 0);
                 mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!"); 
                 wrefresh(win);
-                napms(2000); // Даємо час побачити повідомлення
+                napms(2000); 
                 break;
             }
             
-            // 1. Оновлення гравців
             p1.x = state.p1_x;
             p1.y = state.p1_y;
             p2.x = state.p2_x;
@@ -273,28 +254,23 @@ int run_client_game(int sock, int client_skin_index) {
 
             for (int i = 0; i < MAX_SYNC_BULLETS; i++) {
                 if (state.bullets[i].active) {
-                    mvwprintw(win, state.bullets[i].y, state.bullets[i].x, "|"); // Припустімо, що форма кулі - "|"
+                    mvwprintw(win, state.bullets[i].y, state.bullets[i].x, "|"); 
                 }
             }
 
             for (int i = 0; i < state.active_asteroid_count; i++) {
                 int id = state.asteroids[i].shape_id;
                 
-                // Перевіряємо ID на коректність
                 if (id >= 0 && id < num_types) { 
-                    Asteroid *tpl = asteroid_types[id]; // Отримуємо шаблон
+                    Asteroid *tpl = asteroid_types[id]; 
                     
-                    // Створюємо тимчасовий об'єкт для функції draw_asteroid
-                    Asteroid temp_a = {0}; // Обнуляємо, щоб уникнути сміття
+                    Asteroid temp_a = {0}; 
                     temp_a.x = state.asteroids[i].x;
                     temp_a.y = (float)state.asteroids[i].y; 
                     temp_a.width = tpl->width;
                     temp_a.height = tpl->height;
                     temp_a.shape = tpl->shape;
 
-                    // Встановлюємо активність для малювання (як це робиться у вашій функції move_down)
-                    // Оскільки сервер не передає стан окремих рядків, припускаємо, що всі рядки активні.
-                    // Якщо астероїд активний, ми малюємо його повністю.
                     temp_a.active = 1;
                     for(int r = 0; r < temp_a.height; r++) { temp_a.row_active[r] = 1; }
 
@@ -315,7 +291,6 @@ int run_client_game(int sock, int client_skin_index) {
         }
     }
 
-    // --- 4. ОЧИСТКА ---
     delwin(win);
     endwin();
     close(sock);

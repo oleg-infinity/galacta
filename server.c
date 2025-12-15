@@ -16,16 +16,13 @@
 #include "score.h"
 
 int run_server_game(int client_fd, int server_skin_index ){
-    // === НОВИЙ БЛОК: ОЧІКУВАННЯ В ЛОБІ ===
-    // 1. Отримуємо розміри терміналу
-    initscr(); // Тимчасово ініціалізуємо ncurses для отримання розміру
-    endwin();  // Одразу закриваємо
+    initscr(); 
+    endwin(); 
     
     int max_x, max_y;
     getmaxyx(stdscr, max_y, max_x);
     endwin();
 
-    // --- 1. ІНІЦІАЛІЗАЦІЯ Ncurses та WINDOW ---
     initscr();
     cbreak();
     noecho();
@@ -36,7 +33,6 @@ int run_server_game(int client_fd, int server_skin_index ){
     int win_width = (max_x < desired_max_width ) ? max_x : desired_max_width ;
     int win_height = (max_y < desired_max_height ) ? max_y : desired_max_height ;
     
-    // Перевірка на мінімальний розмір, щоб не було newwin(0, X, Y, Z)
     if (win_width < 10 || win_height < 5) {
         endwin();
         fprintf(stderr, "Terminal is too small to display the window.\n");
@@ -91,7 +87,7 @@ int run_server_game(int client_fd, int server_skin_index ){
         "|"
     };
     Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0};
-reset_game
+
     const char *smallest_circle_shape[] = {
         "*"
     };
@@ -164,10 +160,6 @@ reset_game
     }
 
     int game_running = 1;
-    // --------------------------------------------------
-
-    // --- 2. ІНІЦІАЛІЗАЦІЯ ГРАВЦІВ ---
-    // Нам потрібно визначити параметри скіна
 
     int p1_skin_ship = server_skin_index;
     int p1_skin_height = 0;
@@ -186,8 +178,8 @@ reset_game
     int x2 = win_width / 2 - 2;
     int y2 = win_height - 7;
 
-    Player p1 = {x1, y1, p1_skin_width, p1_skin_height, available_skins[p1_skin_ship], MAX_BULLETS, 0, 1}; // Серверний гравець
-    Player p2 = {x2, y2, p2_skin_width, p2_skin_height, available_skins[p2_skin_ship], MAX_BULLETS, 0, 1};  // Клієнтський гравець
+    Player p1 = {x1, y1, p1_skin_width, p1_skin_height, available_skins[p1_skin_ship], MAX_BULLETS, 0, 1}; 
+    Player p2 = {x2, y2, p2_skin_width, p2_skin_height, available_skins[p2_skin_ship], MAX_BULLETS, 0, 1};  
     
     char skin_recv_buf[32];
     int client_skin_index_new = 0;
@@ -210,7 +202,7 @@ reset_game
     p2.x = win_width / 2 - (p2_skin_width / 2);
 
     char host_skin_sync_buf[32];
-    // Формат: HOST_SKIN <індекс_скіна_хоста>
+
     snprintf(host_skin_sync_buf, sizeof(host_skin_sync_buf), "HOST_SKIN %d", server_skin_index); 
     send(client_fd, host_skin_sync_buf, strlen(host_skin_sync_buf), 0);
 
@@ -231,25 +223,21 @@ reset_game
         }
 
         if (ch != ERR) { 
-             input_move_player(&p1, ch, win_width, bullets);  // Рух P1 виконується тут!
+             input_move_player(&p1, ch, win_width, bullets);  
         }
 
-        // B. ОБРОБКА ВВОДУ КЛІЄНТА (P2)
-        // Сервер отримує ввід і рухає p2
         int n = recv(client_fd, buf, sizeof(buf)-1, MSG_DONTWAIT);
         if (n > 0) {
             buf[n] = 0;
             if (strncmp(buf, "KEY ", 4) == 0) {
                 char client_ch = buf[4];
-                input_move_player(&p2, client_ch, win_width, bullets); // Рух P2 виконується тут!
+                input_move_player(&p2, client_ch, win_width, bullets); 
             }
         }
 
         werase(win);
         box(win, 0, 0);
         
-        // C. ОНОВЛЕННЯ СВІТУ (TODO: Астероїди, Кулі, Зіткнення - лише на Сервері)
-        // ... (Тут буде ваша ігрова логіка) ...
         bullets_logics_and_movement(win, bullets, MAX_BULLETS, &score, asteroids, MAX_ASTEROIDS, shatles, MAX_SHATLES);        bullets_recovery_logics(&p1);        
         bullets_recovery_logics(&p2);
         
@@ -258,20 +246,17 @@ reset_game
           
         score_difficulty_logics(&score, &score_timer, asteroids, MAX_ASTEROIDS, shatles, MAX_SHATLES);
 
-        // D. НАДСИЛАННЯ СТАНУ ОБОХ ГРАВЦІВ КЛІЄНТУ
         GameState state = {0};
-        // 1. Заповнення стану гравців
         state.p1_x = p1.x;
         state.p1_y = p1.y;
         state.p2_x = p2.x;
         state.p2_y = p2.y;
         state.score = score;
-        state.game_over = !game_running; // Треба реалізувати перевірку Game Over
+        state.game_over = !game_running; 
 
         state.p1_bullets_left = p1.bullets_left;  
         state.p2_bullets_left = p2.bullets_left;  
 
-        // 2. Заповнення стану астероїдів
         state.active_asteroid_count = 0;
         for (int i = 0; i < MAX_ASTEROIDS; i++) {
             if (asteroids[i].active && state.active_asteroid_count < MAX_SYNC_ASTEROIDS) {
@@ -279,8 +264,7 @@ reset_game
                 state.asteroids[state.active_asteroid_count].x = asteroids[i].x;
                 state.asteroids[state.active_asteroid_count].y = (int)asteroids[i].y; 
                 
-                // !!! ТЕПЕР МИ ЗБЕРІГАЄМО ID, ЯКИЙ СПАВН ЗБЕРІГ !!!
-                state.asteroids[state.active_asteroid_count].shape_id = asteroids[i].type_id; // <-- Готово!
+                state.asteroids[state.active_asteroid_count].shape_id = asteroids[i].type_id;
                 
                 state.active_asteroid_count++;
             }
@@ -293,13 +277,10 @@ reset_game
                 state.bullets[state.active_bullet_count].x = bullets[i].x;
                 state.bullets[state.active_bullet_count].y = bullets[i].y; 
                 
-                // Якщо кулі мають різні форми/типи, тут також потрібен type_id!
-                
                 state.active_bullet_count++;
             }
         }
 
-        // 3. Надсилання сирих бінарних даних
         send(client_fd, &state, sizeof(state), 0);
 
         if(!game_running) {
@@ -309,7 +290,6 @@ reset_game
             break;
         }
         
-        // E. МАЛЮВАННЯ (Сервер бачить обидва кораблі)
         draw_player(win, &p1); 
         draw_player(win, &p2); 
         
@@ -323,7 +303,6 @@ reset_game
         napms(16); 
     }
 
-    // --- 4. ОЧИСТКА ---
     delwin(win);
     endwin();
     close(client_fd);

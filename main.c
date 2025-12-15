@@ -51,7 +51,7 @@ int main() {
         skin_height++;
     }
 
-    Player player = {x, y, skin_width, skin_height, available_skins[skin_ship], 1};
+    Player player = {x, y, skin_width, skin_height, available_skins[skin_ship], MAX_BULLETS, 0, 1};
 
     Bullet bullets[MAX_BULLETS];
 
@@ -157,7 +157,6 @@ int main() {
     int waiting_for_shatle_wave = 0;
 
     int bullets_recover_timer = 0;
-    int bullets_left= MAX_BULLETS;
     for(int i = 0; i < MAX_BULLETS; i++){
         bullets[i].active = 0;
     }
@@ -184,7 +183,7 @@ int main() {
 
                     mvwprintw(win, 1, win_width - 12, "Best: %d", load_score());
                     mvwprintw(win, 2, win_width - 12, "Score: %d", score);
-                    mvwprintw(win, 1, win_width / 2 - 3, "Bullets: %d", bullets_left);
+                    mvwprintw(win, 1, win_width / 2 - 3, "Bullets: %d", player.bullets_left);
 
                     ch = wgetch(win);
 
@@ -198,9 +197,9 @@ int main() {
                             move_right(&player, win_width - 1);
                             break;
                         case ' ':
-                            if(bullets_left > 0){
+                            if(player.bullets_left > 0){ 
                                 shoot(bullets, MAX_BULLETS, &player);
-                                bullets_left--;
+                                player.bullets_left--;
                             }
                             break;
                     }
@@ -214,6 +213,16 @@ int main() {
 
                     draw_player(win, &player);
 
+                    if (!game_running) {
+                        werase(win);
+                        box(win, 0, 0);
+                        mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
+                        mvwprintw(win, win_height / 2 + 1, win_width / 2 - 12, "Final Score: %d", score);
+                        wrefresh(win);
+                        napms(3000); 
+                        break; 
+                    }
+
                     score_difficulty_logics(&score, &score_timer, asteroids, MAX_ASTEROIDS, shatles, MAX_SHATLES);
                     
                     wrefresh(win);
@@ -221,8 +230,7 @@ int main() {
                     napms(10);
                 }
                 current_action = ACTION_MENU;
-                reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);
-                break;
+                reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);                break;
             case ACTION_SKINS:
                 if (ch == 'q') {
                     current_action = ACTION_MENU;
@@ -271,7 +279,8 @@ int main() {
                     
                     int result = display_host_wait_menu(win_height, win_width, skin_ship);
 
-                    // --- КРИТИЧНЕ ВІДНОВЛЕННЯ ---
+                    reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);
+
                     initscr();
                     cbreak();
                     noecho();
@@ -280,17 +289,15 @@ int main() {
                     clear(); 
                     refresh();
                     
-                    // НОВІ РЯДКИ: Створення нового вікна з оригінальними параметрами
                     int max_x, max_y;
                     getmaxyx(stdscr, max_y, max_x);
                     int start_x_new = (max_x - win_width) / 2;
                     int start_y_new = (max_y - win_height) / 2;
                     
-                    win = newwin(win_height, win_width, start_y_new, start_x_new); // <--- ЦЕЙ РЯДОК
+                    win = newwin(win_height, win_width, start_y_new, start_x_new); 
                     box(win, 0, 0);
                     nodelay(win, TRUE);
                     keypad(win, TRUE);
-                    // --- КІНЕЦЬ ВІДНОВЛЕННЯ ---
 
                     current_action = ACTION_MENU;
                 }
@@ -299,13 +306,13 @@ int main() {
                 if (ch == 'q') {
                     current_action = ACTION_MENU;  
                 } else {  
-                    delwin(win); // <--- ДОДАТИ: ВИДАЛЯЄМО СТАРЕ ВІКНО
-                    endwin();    // <--- ДОДАТИ: ЗАКРИВАЄМО NCURSES
+                    delwin(win);
+                    endwin();
                     
-                    // start_multiplayer_menu викликає run_client_game, який також робить endwin()
                     int result = start_multiplayer_menu(win_height, win_width, skin_ship);
                     
-                    // --- КРИТИЧНЕ ВІДНОВЛЕННЯ (як у ACTION_HOST) ---
+                    reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);
+
                     initscr();
                     cbreak();
                     noecho();
@@ -319,11 +326,10 @@ int main() {
                     int start_x_new = (max_x - win_width) / 2;
                     int start_y_new = (max_y - win_height) / 2;
                     
-                    win = newwin(win_height, win_width, start_y_new, start_x_new); // <--- ЦЕЙ РЯДОК
+                    win = newwin(win_height, win_width, start_y_new, start_x_new); 
                     box(win, 0, 0);
                     nodelay(win, TRUE);
                     keypad(win, TRUE);
-                    // --- КІНЕЦЬ ВІДНОВЛЕННЯ ---
 
                     current_action = ACTION_MENU;
                 }

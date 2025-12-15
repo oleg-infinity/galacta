@@ -18,10 +18,9 @@ typedef enum {
 typedef struct {
     int active;
     int x;
-    int y; // або float, але для мережі int краще
+    int y; 
     int width;
     int height;
-    // Оскільки ми не можемо передати shape (char**), ми передамо ID форми
     int shape_id; 
 } SyncAsteroid;
 

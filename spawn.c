@@ -195,7 +195,7 @@ int check_collision(Asteroid *a, Player *p){
 
     for(int i = 0; i < p->height; i++){
         const char *row = p->shape[i];
-        if (row == NULL) continue; // Захист від NULL-рядка
+        if (row == NULL) continue;
 
         int current_width = strlen(row);
 
@@ -211,15 +211,13 @@ int check_collision(Asteroid *a, Player *p){
                 int a_i = world_y - a->y;
                 int a_j = world_x - a->x;
 
-                // Перевірка, що рядок не NULL і що a_j знаходиться в межах цього рядка
                 const char *a_row = a->shape[a_i];
-                if (a_row == NULL) continue; // Захист від NULL-рядка (хоча це малоймовірно для астероїдів)
+                if (a_row == NULL) continue;
                 
                 int a_row_length = strlen(a_row);
 
-                // КРИТИЧНА ПЕРЕВІРКА: чи a_j не виходить за межі рядка
                 if (a_j >= a_row_length) {
-                    continue; // Ми в межах a->width, але не в межах цього конкретного рядка
+                    continue; 
                 }
                 
                 char a_char = a_row[a_j];

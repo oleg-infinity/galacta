@@ -15,7 +15,6 @@ typedef struct {
     int width;
     int height;
     const char **shape;
-    //int symbol;
     int bullets_left;
     int bullets_recover_timer;
     int active;

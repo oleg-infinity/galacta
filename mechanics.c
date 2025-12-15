@@ -28,7 +28,6 @@ void get_local_ip(char *ip_buffer, size_t buffer_size) {
     int family, s;
     char host[NI_MAXHOST];
     
-    // Встановлюємо IP за замовчуванням
     strncpy(ip_buffer, "127.0.0.1", buffer_size);
 
     if (getifaddrs(&ifaddr) == -1) {
@@ -49,7 +48,6 @@ void get_local_ip(char *ip_buffer, size_t buffer_size) {
                 printf("getnameinfo() failed: %s\n", gai_strerror(s));
                 continue;
             }
-            // Шукаємо першу робочу IP-адресу, відмінну від локальної петлі (127.0.0.1)
             if (strcmp(host, "127.0.0.1") != 0 && strncmp(ifa->ifa_name, "lo", 2) != 0) {
                 strncpy(ip_buffer, host, buffer_size);
                 break; 
@@ -68,7 +66,6 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     socklen_t addrlen = sizeof(addr);
     int ch;
     
-    // --- 1. ОТРИМАННЯ IP ТА СТВОРЕННЯ СОКЕТА ---
     get_local_ip(ip_buffer, sizeof(ip_buffer)); 
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -97,7 +94,7 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     wait_win = newwin(15, 60, start_y, start_x);
     box(wait_win, 0, 0);
     keypad(wait_win, TRUE);
-    nodelay(wait_win, TRUE); // Неблокуючий ввід для оновлення
+    nodelay(wait_win, TRUE); 
 
     mvwprintw(wait_win, 1, 2, "=== HOSTING GAME ===");
     mvwprintw(wait_win, 3, 2, "Server IP:");
@@ -111,46 +108,38 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     fcntl(server_fd, F_SETFL, flags | O_NONBLOCK);
     
     while(1) {
-        // A. Перевірка вводу (Q для скасування)
         ch = wgetch(wait_win);
         if (ch == 'q' || ch == 'Q') {
             client_fd = -1; 
             break;
         }
-
-        // B. Спроба прийняти підключення
         client_fd = accept(server_fd, (struct sockaddr*)&addr, &addrlen);
         if (client_fd >= 0) {
-            break; // Клієнт підключився!
+            break; 
         } else if (errno != EWOULDBLOCK && errno != EAGAIN && client_fd == -1) {
-             // Інша помилка accept
-             perror("accept");
-             break;
+            perror("accept");
+            break;
         }
 
-        napms(100); // Затримка для зменшення навантаження
+        napms(100); 
     }
 
     delwin(wait_win);
     endwin(); 
-    close(server_fd); // Серверний слухаючий сокет більше не потрібен
-
-    // --- 4. ЗАПУСК ЛОБІ ТА ГРИ ---
+    close(server_fd);
+-
     if (client_fd >= 0) {
         printf("[SERVER] Client connected! Entering Lobby...\n");
-        // Запускаємо лобі сервера (тепер у блокуючому режимі)
         int ready = display_server_lobby(height, width); 
         
         if (ready) {
-            // run_server тепер має приймати client_fd, а не порт
             return run_server_game(client_fd, server_index_skin); 
         } else {
-            // Закриваємо з'єднання, якщо хост скасував у лобі
             close(client_fd);
             return 0;
         }
     }
-    return 0; // Скасовано або помилка
+    return 0;
 }
 
 int start_multiplayer_menu(int height, int width, int skin_ship) {
@@ -158,15 +147,13 @@ int start_multiplayer_menu(int height, int width, int skin_ship) {
     char ip_buffer[16] = ""; 
     int ch;
 
-    // --- 1. Ввід IP (Виглядає правильно) ---
     initscr();
     cbreak();
     noecho();
     curs_set(1); 
 
-    // Визначення розмірів вікна (якщо вони були передані, використовуємо їх)
-    int max_x = width; // Припустимо, що width - це max_x
-    int max_y = height; // Припустимо, що height - це max_y
+    int max_x = width;
+    int max_y = height; 
 
     input_win = newwin(5, 40, (max_y / 2) - 2, (max_x / 2) - 20);
     box(input_win, 0, 0);
@@ -180,29 +167,28 @@ int start_multiplayer_menu(int height, int width, int skin_ship) {
         if (ch == 'q' || ch == 'Q') {
             delwin(input_win);
             endwin();
-            return 0; // Повертаємо 0, щоб головне меню знало про скасування
+            return 0; 
         }
         if (ch == '\n' || ch == KEY_ENTER) {
             ip_buffer[ip_index] = '\0';
             break;
-        } else if (ch == KEY_BACKSPACE || ch == 127) { // Обробка Backspace
+        } else if (ch == KEY_BACKSPACE || ch == 127) { 
             if (ip_index > 0) {
                 ip_index--;
-                ip_buffer[ip_index] = ' '; // Видаляємо символ
+                ip_buffer[ip_index] = ' '; 
             }
         } else if (ip_index < 15 && (ch == '.' || (ch >= '0' && ch <= '9'))) {
             ip_buffer[ip_index] = (char)ch;
             ip_index++;
         }
         
-        mvwprintw(input_win, 3, 3, "%-15s", ip_buffer); // Вивести буфер та очистити залишок
+        mvwprintw(input_win, 3, 3, "%-15s", ip_buffer); 
         wrefresh(input_win);
     }
 
     delwin(input_win);
     endwin(); 
     
-    // --- 2. Спроба підключення без ncurses ---
     if (ip_buffer[0] != '\0') {
         int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) { perror("socket"); return -1; }
@@ -216,16 +202,12 @@ int start_multiplayer_menu(int height, int width, int skin_ship) {
 
         if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) < 0) { 
             perror("[CLIENT] Connection failed"); 
-            return -1; // Помилка підключення
+            return -1; 
         }
         
-        // --- 3. ЛОБІ ---
-        // Якщо підключення вдале, викликаємо лобі.
         int ready = display_lobby(sock, max_y, max_x, ip_buffer);
         
         if (ready) {
-            // run_client тепер має приймати сокет, який вже підключений
-            // Вам потрібно модифікувати run_client, щоб він приймав int sock
             printf("[CLIENT] Starting game...\n");
             return run_client_game(sock, skin_ship); 
         } else {
@@ -241,7 +223,6 @@ int display_lobby(int sock, int win_height, int win_width, const char *server_ip
     WINDOW *lobby_win;
     int ch;
     
-    // Ініціалізація Ncurses для лобі
     initscr();
     cbreak();
     noecho();
@@ -280,17 +261,15 @@ int display_lobby(int sock, int win_height, int win_width, const char *server_ip
     }
 
     delwin(lobby_win);
-    endwin(); // Завершення ncurses для лобі
+    endwin(); 
 
     return ready_to_start;
 }
 
-// Помістіть це у mechanics.c (або в окремий файл, якщо потрібно)
 int display_server_lobby(int win_height, int win_width) {
     WINDOW *lobby_win;
     int ch;
     
-    // Ініціалізація Ncurses для лобі
     initscr();
     cbreak();
     noecho();
@@ -301,7 +280,7 @@ int display_server_lobby(int win_height, int win_width) {
     lobby_win = newwin(15, 60, start_y, start_x);
     box(lobby_win, 0, 0);
     keypad(lobby_win, TRUE);
-    nodelay(lobby_win, FALSE); // БЛОКУЮЧИЙ РЕЖИМ
+    nodelay(lobby_win, FALSE); 
 
     mvwprintw(lobby_win, 1, 2, "=== MULTIPLAYER HOST LOBBY ===");
     mvwprintw(lobby_win, 3, 2, "STATUS: Client Connected.");
@@ -328,7 +307,7 @@ int display_server_lobby(int win_height, int win_width) {
     }
 
     delwin(lobby_win);
-    endwin(); // Завершення ncurses для лобі
+    endwin(); 
 
     return ready_to_start;
 }
@@ -377,41 +356,10 @@ void reset_game(Player *player, Bullet bullets[], Shatle shatles[], Asteroid ast
     *shatle_wave_done = 0;
     *shatle_spawn_timer = 0;
     *spawn_timer = 0;
-    *spawn_interval = (rand() % 70) + 20;  // Скидаємо інтервал спавну
+    *spawn_interval = (rand() % 70) + 20;  
 
     *game_running = 1;
 }
-
-/*
-void bullets_logics(WINDOW *win, Bullet bullets[], int max_bullets, int *bullets_left, int *bullets_recover_timer, int *score, Asteroid asteroids[], int max_asteroids, Shatle shatles[], int max_shatles) {
-    move_bullets(bullets, MAX_BULLETS);
-    draw_bullets(win, bullets, MAX_BULLETS);
-    for(int b = 0; b < MAX_BULLETS; b++){
-        if(!bullets[b].active) continue;
-        for(int a = 0; a < MAX_ASTEROIDS; a++){
-            if(bullet_hits_asteroid(&bullets[b], &asteroids[a])){
-                *score += 5;
-                bullets[b].active = 0;
-            }
-        }
-        for(int s = 0; s < MAX_SHATLES; s++){
-            int result = bullet_hits_shatle(&bullets[b], &shatles[s]);
-            if(result > 1){
-                *score += result;
-                bullets[b].active = 0;
-            }
-        }
-    }
-
-    *bullets_recover_timer += 10;
-    if(*bullets_recover_timer >= 2500){
-        if(*bullets_left < MAX_BULLETS){
-           (*bullets_left)++;
-        }
-        *bullets_recover_timer = 0;
-    }
-}
-    */
 
 void bullets_recovery_logics(Player *p) {
     p->bullets_recover_timer += 10;
@@ -429,26 +377,25 @@ void bullets_logics_and_movement(WINDOW *win, Bullet bullets[], int max_bullets,
     move_bullets(bullets, MAX_BULLETS);
     draw_bullets(win, bullets, MAX_BULLETS);
     
-    for(int b = 0; b < max_bullets; b++){ // Використовуйте max_bullets з аргументів
+    for(int b = 0; b < max_bullets; b++){ 
         if(!bullets[b].active) continue;
 
         for(int a = 0; a < max_asteroids; a++){
             if(bullet_hits_asteroid(&bullets[b], &asteroids[a])){
                 *score += 5;
                 bullets[b].active = 0;
-                break; // Куля вже не активна, переходимо до наступної кулі
+                break; 
             }
         }
         
         if(!bullets[b].active) continue; 
         
         for(int s = 0; s < max_shatles; s++){
-            // Припускаємо, що bullet_hits_shatle повертає очки > 1, якщо влучила
             int result = bullet_hits_shatle(&bullets[b], &shatles[s]); 
             if(result > 1){
                 *score += result;
                 bullets[b].active = 0;
-                break; // Куля вже не активна, переходимо до наступної кулі
+                break; 
             }
         }
     }
