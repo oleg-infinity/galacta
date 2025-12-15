@@ -104,7 +104,7 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     int start_x = (max_x - display_host_wait_menu_x) / 2;
     int start_y = (max_y - display_host_wait_menu_y) / 2;
 
-    wait_win = newwin(display_host_wait_menu, display_host_wait_menu_x, start_y, start_x);
+    wait_win = newwin(display_host_wait_menu_y, display_host_wait_menu_x, start_y, start_x);
     box(wait_win, 0, 0);
     keypad(wait_win, TRUE);
     nodelay(wait_win, TRUE); 
