@@ -15,7 +15,10 @@ typedef struct {
     int width;
     int height;
     const char **shape;
-    int symbol;
+    //int symbol;
+    int bullets_left;
+    int bullets_recover_timer;
+    int active;
 } Player;
 
 void move_left(Player *p, int min_x);

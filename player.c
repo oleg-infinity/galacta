@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include "skins.h"
 #include "player.h"
+#include "mechanics.h"
 
 // player
 

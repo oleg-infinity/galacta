@@ -5,6 +5,8 @@
 #include <ncurses.h>
 #include "player.h"
 
+#define MAX_ASTEROID_ROWS 5
+
 typedef struct {
     int x;
     float y;
@@ -13,7 +15,8 @@ typedef struct {
     const char **shape;
     float speed;
     int active;
-    int row_active[5];
+    int row_active[MAX_ASTEROID_ROWS];
+    int type_id;
 } Asteroid;
 
 typedef struct {
@@ -27,6 +30,7 @@ typedef struct {
     int active;
     int hp;
     int bonus_score;
+    int type_id;
 } Shatle;
 
 typedef struct {

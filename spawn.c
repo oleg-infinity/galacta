@@ -90,7 +90,9 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
 
     for(int i = 0; i < max_asteroids; i++){
         if(!asteroids[i].active){
-            Asteroid *tpl = types[rand() % num_types];
+
+            int selected_type_id = rand() % num_types; // Вибираємо ID
+            Asteroid *tpl = types[selected_type_id];  // Отримуємо шаблон
 
             SpawnZone zones[16];
             int zone_count = build_spawn_zones(zones, 16, asteroids, max_asteroids, win_width);
@@ -104,6 +106,7 @@ void asteroids_spawn(Asteroid asteroids[], int max_asteroids, Asteroid **types, 
             asteroids[i].shape = tpl->shape;
             asteroids[i].speed = ((rand() % 3) + 4) / 100.0;
             asteroids[i].active = 1;
+            asteroids[i].type_id = selected_type_id;
 
             for(int r = 0; r < asteroids[i].height; r++){
                 asteroids[i].row_active[r] = 1;
@@ -181,6 +184,8 @@ int check_collision(Asteroid *a, Player *p){
 int check_collision(Asteroid *a, Player *p){
     if(!a->active) return 0;
 
+    if(p == NULL) return 0;
+
     if(p->x + p->width < a->x ||
        p->x > a->x + a->width ||
        p->y + p->height < (int)(a->y) ||
@@ -189,7 +194,12 @@ int check_collision(Asteroid *a, Player *p){
     }
 
     for(int i = 0; i < p->height; i++){
-        for(int j = 0; j < p->width; j++){
+        const char *row = p->shape[i];
+        if (row == NULL) continue; // Захист від NULL-рядка
+
+        int current_width = strlen(row);
+
+        for(int j = 0; j < p->width && j < current_width; j++){
             char p_char = p->shape[i][j];
 
             if(p_char == ' ') continue;
@@ -201,7 +211,18 @@ int check_collision(Asteroid *a, Player *p){
                 int a_i = world_y - a->y;
                 int a_j = world_x - a->x;
 
-                char a_char = a->shape[a_i][a_j];
+                // Перевірка, що рядок не NULL і що a_j знаходиться в межах цього рядка
+                const char *a_row = a->shape[a_i];
+                if (a_row == NULL) continue; // Захист від NULL-рядка (хоча це малоймовірно для астероїдів)
+                
+                int a_row_length = strlen(a_row);
+
+                // КРИТИЧНА ПЕРЕВІРКА: чи a_j не виходить за межі рядка
+                if (a_j >= a_row_length) {
+                    continue; // Ми в межах a->width, але не в межах цього конкретного рядка
+                }
+                
+                char a_char = a_row[a_j];
 
                 if(a_char != ' '){
                     return 1;
