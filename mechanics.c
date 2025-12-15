@@ -425,7 +425,7 @@ void shatles_logics(WINDOW *win, Shatle shatles[], Asteroid asteroids[], int max
     }
 
     if(!(*waiting_for_shatle_wave) && !(*shatle_wave_active)){
-        int max_active_asteroids = 15 + *score / 10;
+        int max_active_asteroids = 50 + *score / 10;
         if(max_active_asteroids > MAX_ASTEROIDS) max_active_asteroids = MAX_ASTEROIDS;
         int active_count = 0;
         for(int i = 0; i < MAX_ASTEROIDS; i++){

@@ -154,33 +154,6 @@ int any_asteroid_active(Asteroid asteroids[], int max){
     return 0;
 }
 
-/*
-int check_collision(Asteroid *a, Player *p){
-    if(!a->active) return 0;
-
-    for(int i = 0; i < a->height; i++){
-        if(!a->row_active[i]) continue;
-        int row_y = (int)(a->y)+i;
-
-        for(int j = 0; j < a->width; j++){
-            if(a->shape[i][j] == ' ') continue;
-            int col_x = a-> x + j;
-
-            for(int py = 0; py < p->height; py++){
-                for(int px = 0; px < p->width; px++){
-                    int gx = p-> x + px;
-                    int gy = p-> y + py;
-                    if(col_x == gx && row_y == gy){
-                        return 1;
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}
-    */
-
 int check_collision(Asteroid *a, Player *p){
     if(!a->active) return 0;
 
