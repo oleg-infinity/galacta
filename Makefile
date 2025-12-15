@@ -1,10 +1,10 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wno-unused-parameter -Wno-unused-variable -Wno-missing-field-initializers
 LDFLAGS = -lncurses -lpthread
 SRCS = main.c spawn.c player.c skins.c score.c server.c client.c mechanics.c
-OBJS = $(SRCS:.c=.o)
-TARGET = game
 BIN_DIR = compiled
+OBJS = $(addprefix $(BIN_DIR)/, $(SRCS:.c=.o))
+TARGET = game
 
 .PHONY: all clean run
 
@@ -14,9 +14,9 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 $(BIN_DIR)/$(TARGET): $(OBJS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
-%.o: %.c
+$(BIN_DIR)/%.o: %.c | $(BIN_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(BIN_DIR)/$(TARGET)

@@ -102,13 +102,13 @@ int run_server_game(int client_fd, int server_skin_index ){
         "/&.",
         "*@'"
     };
-    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0, {0}};
+    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0, {0}, 3};
 
     const char *mid_circle_shape[] = {
         ".-.",
         "'-'"
     };
-    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0, {0}};
+    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0, {0}, 4};
 
     const char *big_circle_shape[] = {
         "/**\\",
