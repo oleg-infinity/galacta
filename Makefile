@@ -1,29 +1,27 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra
 LDFLAGS = -lncurses -lpthread
-TARGET = game
 SRCS = main.c spawn.c player.c skins.c score.c server.c client.c mechanics.c
 OBJS = $(SRCS:.c=.o)
+TARGET = game
+BIN_DIR = compiled
 
-all: $(TARGET)
+.PHONY: all clean run
 
-$(TARGET): $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
+all: $(BIN_DIR)/$(TARGET)
 
-run: $(TARGET)
-	./$(TARGET)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(BIN_DIR)/$(TARGET): $(OBJS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-main.o: main.h spawn.h player.h skins.h score.h network.h player_input.h mechanics.h
-spawn.o: spawn.h player.h
-player.o: player.h
-skins.o: skins.h
-score.o: score.h
-server.o: network.h player.h mechanics.h
-client.o: network.h player.h mechanics.h
-mechanics.o: player.h spawn.h
+run: $(BIN_DIR)/$(TARGET)
+	./$(BIN_DIR)/$(TARGET)
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(BIN_DIR)/$(TARGET)
+	rmdir $(BIN_DIR) 2>/dev/null || true

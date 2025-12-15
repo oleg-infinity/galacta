@@ -67,7 +67,7 @@ int main() {
         "       <<<\\\\\\###___###===###___###///>>>                      ",
         "            >>>>>===[[ ENGINE VOID ]]===<<<<<                    "
     };
-    Shatle shatle2 = {0, 0, 0, 64, 7, big_shatle_shape, 0.0f, 0, 5, 40};
+    Shatle shatle2 = {0, 0, 0, 64, 7, big_shatle_shape, 0.0f, 0, 5, 40, 1};
 
     const char *midlle_shatle_shape[] = {
         "-->          ",
@@ -76,7 +76,7 @@ int main() {
         "-->---/->    ",
         "-->          ",
     };
-    Shatle shatle1 = {0, 0, 0, 13, 5, midlle_shatle_shape, 0.0f, 0, 1, 10};
+    Shatle shatle1 = {0, 0, 0, 13, 5, midlle_shatle_shape, 0.0f, 0, 1, 10, 0};
 
     Shatle *shatle_types[] = { &shatle1, &shatle2 };
     int num_shatle_types = sizeof(shatle_types) / sizeof(shatle_types[0]);
@@ -88,35 +88,35 @@ int main() {
     const char *smallest_rub_shape[] = {
         "|"
     };
-    Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0};
+    Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0,{0}, 8};
 
     const char *smallest_circle_shape[] = {
         "*"
     };
-    Asteroid asteroid1 = {0, 0, 1, 1, smallest_circle_shape, 0.0f, 0};
+    Asteroid asteroid1 = {0, 0, 1, 1, smallest_circle_shape, 0.0f, 0,  {0}, 1};
 
     const char *small_circle_shape[] = {
         "@"
     };
-    Asteroid asteroid2 = {0, 0, 1, 1, small_circle_shape, 0.0f, 0};
+    Asteroid asteroid2 = {0, 0, 1, 1, small_circle_shape, 0.0f, 0, {0}, 2};
 
     const char *small_cube_shape[] = {
         "/&.",
         "*@'"
     };
-    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0};
+    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0, {0}, 3};
 
     const char *mid_circle_shape[] = {
         ".-.",
         "'-'"
     };
-    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0};
+    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0, {0}, 4};
 
     const char *big_circle_shape[] = {
         "/**\\",
         "\\__/"
     };
-    Asteroid asteroid5 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0};
+    Asteroid asteroid5 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0, {0}, 5};
 
     const char *bigger_circle_shape[] = {
         " .-*-. ",
@@ -124,7 +124,7 @@ int main() {
         "\\     /",
         " '*-*' "
     };
-    Asteroid asteroid6 = {0, 0, 7, 4, bigger_circle_shape, 0.0f, 0};
+    Asteroid asteroid6 = {0, 0, 7, 4, bigger_circle_shape, 0.0f, 0,{0}, 6};
 
     const char *biggest_circle_shape[] = {
         "  .--**--.  ",
@@ -133,7 +133,7 @@ int main() {
         " \\.  O    / ",
         "  '--__--'  "
     };
-    Asteroid asteroid7 = {0, 0, 13, 5, biggest_circle_shape, 0.0f, 0};
+    Asteroid asteroid7 = {0, 0, 13, 5, biggest_circle_shape, 0.0f, 0, {0}, 7};
 
 
     Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4, &asteroid5, &asteroid6, &asteroid7, &asteroid8};
@@ -156,7 +156,6 @@ int main() {
     int shatle_sequence_index = 0;
     int waiting_for_shatle_wave = 0;
 
-    int bullets_recover_timer = 0;
     for(int i = 0; i < MAX_BULLETS; i++){
         bullets[i].active = 0;
     }
@@ -285,7 +284,7 @@ int main() {
                     delwin(win); 
                     endwin();
                     
-                    int result = display_host_wait_menu(win_height, win_width, skin_ship);
+                    display_host_wait_menu(win_height, win_width, skin_ship);
 
                     reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);
 
@@ -317,7 +316,7 @@ int main() {
                     delwin(win);
                     endwin();
                     
-                    int result = start_multiplayer_menu(win_height, win_width, skin_ship);
+                    start_multiplayer_menu(win_height, win_width, skin_ship);
                     
                     reset_game(&player, bullets, shatles, asteroids, MAX_ASTEROIDS, MAX_SHATLES, &score, &player.bullets_left, &waiting_for_shatle_wave, &shatle_wave_active, &shatle_to_spawn, &shatle_sequence_index, &last_shatle_wave_score, &shatle_wave_done, &shatle_spawn_timer, &spawn_timer, &spawn_interval, &game_running);
 

@@ -87,7 +87,7 @@ int run_client_game(int sock, int client_skin_index) {
         "       <<<\\\\\\###___###===###___###///>>>                      ",
         "            >>>>>===[[ ENGINE VOID ]]===<<<<<                    "
     };
-    Shatle shatle2 = {0, 0, 0, 64, 7, big_shatle_shape, 0.0f, 0, 5, 40};
+    Shatle shatle2 = {0, 0, 0, 64, 7, big_shatle_shape, 0.0f, 0, 5, 40, 1};
 
     const char *midlle_shatle_shape[] = {
         "-->          ",
@@ -96,7 +96,7 @@ int run_client_game(int sock, int client_skin_index) {
         "-->---/->    ",
         "-->          ",
     };
-    Shatle shatle1 = {0, 0, 0, 13, 5, midlle_shatle_shape, 0.0f, 0, 1, 10};
+    Shatle shatle1 = {0, 0, 0, 13, 5, midlle_shatle_shape, 0.0f, 0, 1, 10, 0};
 
     Shatle *shatle_types[] = { &shatle1, &shatle2 };
     int num_shatle_types = sizeof(shatle_types) / sizeof(shatle_types[0]);
@@ -108,35 +108,35 @@ int run_client_game(int sock, int client_skin_index) {
     const char *smallest_rub_shape[] = {
         "|"
     };
-    Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0};
+    Asteroid asteroid8 = {0, 0, 1, 1, smallest_rub_shape, 0.0f, 0,{0}, 8};
 
     const char *smallest_circle_shape[] = {
         "*"
     };
-    Asteroid asteroid1 = {0, 0, 1, 1, smallest_circle_shape, 0.0f, 0};
+    Asteroid asteroid1 = {0, 0, 1, 1, smallest_circle_shape, 0.0f, 0,  {0}, 1};
 
     const char *small_circle_shape[] = {
         "@"
     };
-    Asteroid asteroid2 = {0, 0, 1, 1, small_circle_shape, 0.0f, 0};
+    Asteroid asteroid2 = {0, 0, 1, 1, small_circle_shape, 0.0f, 0, {0}, 2};
 
     const char *small_cube_shape[] = {
         "/&.",
         "*@'"
     };
-    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0};
+    Asteroid asteroid3 = {0, 0, 3, 2, small_cube_shape, 0.0f, 0,{0}, 3};
 
     const char *mid_circle_shape[] = {
         ".-.",
         "'-'"
     };
-    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0};
+    Asteroid asteroid4 = {0, 0, 3, 2, mid_circle_shape, 0.0f, 0, {0}, 4};
 
     const char *big_circle_shape[] = {
         "/**\\",
         "\\__/"
     };
-    Asteroid asteroid5 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0};
+    Asteroid asteroid5 = {0, 0, 4, 2, big_circle_shape, 0.0f, 0, {0}, 5};
 
     const char *bigger_circle_shape[] = {
         " .-*-. ",
@@ -144,7 +144,7 @@ int run_client_game(int sock, int client_skin_index) {
         "\\     /",
         " '*-*' "
     };
-    Asteroid asteroid6 = {0, 0, 7, 4, bigger_circle_shape, 0.0f, 0};
+    Asteroid asteroid6 = {0, 0, 7, 4, bigger_circle_shape, 0.0f, 0,{0}, 6};
 
     const char *biggest_circle_shape[] = {
         "  .--**--.  ",
@@ -153,7 +153,7 @@ int run_client_game(int sock, int client_skin_index) {
         " \\.  O    / ",
         "  '--__--'  "
     };
-    Asteroid asteroid7 = {0, 0, 13, 5, biggest_circle_shape, 0.0f, 0};
+    Asteroid asteroid7 = {0, 0, 13, 5, biggest_circle_shape, 0.0f, 0, {0}, 7};
 
 
     Asteroid *asteroid_types[] = {&asteroid1, &asteroid2, &asteroid3, &asteroid4, &asteroid5, &asteroid6, &asteroid7, &asteroid8};
