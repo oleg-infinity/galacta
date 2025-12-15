@@ -182,9 +182,7 @@ int main() {
 
                     if (ch == 'q' || ch == 'Q') {
                         if(score > load_score()) save_score(score);
-                        delwin(win);
-                        endwin();
-                        return 0;
+                        break;
                     }
 
                     werase(win);
@@ -226,7 +224,7 @@ int main() {
                         werase(win);
                         box(win, 0, 0);
                         mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
-                        mvwprintw(win, win_height / 2 + 1, win_width / 2 - 12, "Final Score: %d", score);
+                        mvwprintw(win, win_height / 2 + 1, win_width / 2 - 8, "Final Score: %d", score);
                         wrefresh(win);
                         napms(3000); 
                         break; 

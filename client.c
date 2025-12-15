@@ -239,10 +239,11 @@ int run_client_game(int sock, int client_skin_index) {
             if (state.game_over) {
                 if(score > load_score()) save_score(score);
                 box(win, 0, 0);
-                mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!"); 
+                mvwprintw(win, win_height / 2, win_width / 2 - 5, "GAME OVER!");
+                mvwprintw(win, win_height / 2 + 1, win_width / 2 - 8, "Final Score: %d", score);
                 wrefresh(win);
-                napms(2000); 
-                break;
+                napms(3000); 
+                break; 
             }
             
             p1.x = state.p1_x;

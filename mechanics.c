@@ -89,9 +89,22 @@ int display_host_wait_menu(int height, int width, int server_index_skin) {
     noecho();
     curs_set(0); 
 
-    int start_x = (width - 60) / 2;
-    int start_y = (height - 15) / 2;
-    wait_win = newwin(15, 60, start_y, start_x);
+    int max_x, max_y;
+    getmaxyx(stdscr, max_y, max_x);
+
+    int max_desired_width = 100;
+    int max_desired_height = 35;
+
+    int win_width = (max_x < max_desired_width) ? max_x : max_desired_width;
+    int win_height = (max_y < max_desired_height) ? max_y : max_desired_height;
+
+    int display_host_wait_menu_x = 60;
+    int display_host_wait_menu_y = 15;
+
+    int start_x = (max_x - display_host_wait_menu_x) / 2;
+    int start_y = (max_y - display_host_wait_menu_y) / 2;
+
+    wait_win = newwin(display_host_wait_menu, display_host_wait_menu_x, start_y, start_x);
     box(wait_win, 0, 0);
     keypad(wait_win, TRUE);
     nodelay(wait_win, TRUE); 
@@ -152,10 +165,16 @@ int start_multiplayer_menu(int height, int width, int skin_ship) {
     noecho();
     curs_set(1); 
 
-    int max_x = width;
-    int max_y = height; 
+    int max_x, max_y;
+    getmaxyx(stdscr, max_y, max_x);
 
-    input_win = newwin(5, 40, (max_y / 2) - 2, (max_x / 2) - 20);
+    int start_multiplayer_menu_x = 50;
+    int start_multiplayer_menu_y = 5;
+
+    int start_x = (max_x - start_multiplayer_menu_x) / 2;
+    int start_y = (max_y - start_multiplayer_menu_y) / 2;
+
+    input_win = newwin(start_multiplayer_menu_y, start_multiplayer_menu_x, start_y, start_x);
     box(input_win, 0, 0);
     mvwprintw(input_win, 1, 1, "Enter Server IP (e.g., 192.168.1.100):");
     mvwprintw(input_win, 3, 1, "> ");
@@ -228,20 +247,37 @@ int display_lobby(int sock, int win_height, int win_width, const char *server_ip
     noecho();
     curs_set(0); 
 
-    int start_x = (win_width - 60) / 2;
-    int start_y = (win_height - 15) / 2;
-    lobby_win = newwin(15, 60, start_y, start_x);
+    int max_x, max_y;
+    getmaxyx(stdscr, max_y, max_x);
+    
+    int display_lobby_x = 60;
+    int display_lobby_y = 15;
+
+    int start_x = (max_x - display_lobby_x) / 2;
+    int start_y = (max_y - display_lobby_y) / 2;
+
+    lobby_win = newwin(display_lobby_y, display_lobby_x, start_y, start_x);
     box(lobby_win, 0, 0);
     keypad(lobby_win, TRUE);
     nodelay(lobby_win, TRUE);
 
-    mvwprintw(lobby_win, 1, 2, "=== MULTIPLAYER LOBBY ===");
-    mvwprintw(lobby_win, 3, 2, "STATUS: Connected to Server [%s]", server_ip);
-    mvwprintw(lobby_win, 5, 2, "PLAYER 1 (Server): READY");
-    mvwprintw(lobby_win, 6, 2, "PLAYER 2 (Client): READY");
+    int w = display_lobby_x;
     
-    mvwprintw(lobby_win, 8, 2, "Press 'S' to Start the game");
-    mvwprintw(lobby_win, 9, 2, "Press 'Q' to Disconnect");
+    const char *title = "=== MULTIPLAYER LOBBY ===";
+    char status_buffer[64]; 
+    snprintf(status_buffer, sizeof(status_buffer), "STATUS: Connected to Server [%s]", server_ip);
+
+    const char *p1_ready = "PLAYER 1 (Server): READY";
+    const char *p2_ready = "PLAYER 2 (Client): READY";
+    const char *start_hint = "Press 'S' to Start the game";
+    const char *quit_hint = "Press 'Q' to Disconnect";
+
+    mvwprintw(lobby_win, 1, (w - strlen(title)) / 2, "%s", title);
+    mvwprintw(lobby_win, 3, (w - strlen(status_buffer)) / 2, "%s", status_buffer);
+    mvwprintw(lobby_win, 5, (w - strlen(p1_ready)) / 2, "%s", p1_ready);
+    mvwprintw(lobby_win, 6, (w - strlen(p2_ready)) / 2, "%s", p2_ready);
+    mvwprintw(lobby_win, 8, (w - strlen(start_hint)) / 2, "%s", start_hint);
+    mvwprintw(lobby_win, 9, (w - strlen(quit_hint)) / 2, "%s", quit_hint);
 
     wrefresh(lobby_win);
 
@@ -275,20 +311,35 @@ int display_server_lobby(int win_height, int win_width) {
     noecho();
     curs_set(0); 
 
-    int start_x = (win_width - 60) / 2;
-    int start_y = (win_height - 15) / 2;
-    lobby_win = newwin(15, 60, start_y, start_x);
+    int max_x, max_y;
+    getmaxyx(stdscr, max_y, max_x);
+    
+    int display_server_lobby_x = 60;
+    int display_server_lobby_y = 15;
+
+    int start_x = (max_x - display_server_lobby_x) / 2;
+    int start_y = (max_y - display_server_lobby_y) / 2;
+
+    lobby_win = newwin(display_server_lobby_y, display_server_lobby_x, start_y, start_x);
     box(lobby_win, 0, 0);
     keypad(lobby_win, TRUE);
     nodelay(lobby_win, FALSE); 
 
-    mvwprintw(lobby_win, 1, 2, "=== MULTIPLAYER HOST LOBBY ===");
-    mvwprintw(lobby_win, 3, 2, "STATUS: Client Connected.");
-    mvwprintw(lobby_win, 5, 2, "PLAYER 1 (Host): READY");
-    mvwprintw(lobby_win, 6, 2, "PLAYER 2 (Client): READY (Waiting for Host to start)");
-    
-    mvwprintw(lobby_win, 8, 2, "Press 'S' to Start the game");
-    mvwprintw(lobby_win, 9, 2, "Press 'Q' to Disconnect");
+    int w = display_server_lobby_x;
+
+    const char *title = "=== MULTIPLAYER HOST LOBBY ===";
+    const char *status = "STATUS: Client Connected.";
+    const char *p1_ready = "PLAYER 1 (Host): READY";
+    const char *p2_ready = "PLAYER 2 (Client): READY (Waiting for Host to start)";
+    const char *start_hint = "Press 'S' to Start the game";
+    const char *quit_hint = "Press 'Q' to Disconnect";
+
+    mvwprintw(lobby_win, 1, (w - strlen(title)) / 2, "%s", title);
+    mvwprintw(lobby_win, 3, (w - strlen(status)) / 2, "%s", status);
+    mvwprintw(lobby_win, 5, (w - strlen(p1_ready)) / 2, "%s", p1_ready);
+    mvwprintw(lobby_win, 6, (w - strlen(p2_ready)) / 2, "%s", p2_ready);
+    mvwprintw(lobby_win, 8, (w - strlen(start_hint)) / 2, "%s", start_hint);
+    mvwprintw(lobby_win, 9, (w - strlen(quit_hint)) / 2, "%s", quit_hint);
 
     wrefresh(lobby_win);
 
